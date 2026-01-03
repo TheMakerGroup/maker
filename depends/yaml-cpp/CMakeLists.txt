@@ -1,4 +1,4 @@
-﻿# 3.5 is actually available almost everywhere.
+# 3.5 is actually available almost everywhere.
 # 3.30 as the upper policy limit avoids CMake deprecation warnings.
 cmake_minimum_required(VERSION 3.5...3.30)
 
@@ -188,9 +188,9 @@ if(YAML_CPP_BUILD_TESTS)
   add_subdirectory(test)
 endif()
 
-#if(YAML_CPP_BUILD_TOOLS)
-#  add_subdirectory(util)
-#endif()
+if(YAML_CPP_BUILD_TOOLS)
+  add_subdirectory(util)
+endif()
 
 if (YAML_CPP_FORMAT_SOURCE AND YAML_CPP_CLANG_FORMAT_EXE)
   add_custom_target(format
