@@ -1,7 +1,7 @@
 ﻿#include "main.h"
 
-YAML::Node yml_paser() {
-#ifdef DEBUG // Note: test.yml won't be checked in future.
+YAML::Node yml_paser(std::string& file_name) {
+#ifdef DEBUG // Note: test.yml won't be checked in the future.
     const std::vector<std::string> files = { "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml", "test.yml" };
 #else
     const std::vector<std::string> files = { "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml" };
@@ -10,6 +10,7 @@ YAML::Node yml_paser() {
 
     for (const auto& filename : files) {
         try {
+            file_name = filename;
             config = YAML::LoadFile(filename);
             break;
         }
@@ -19,14 +20,14 @@ YAML::Node yml_paser() {
     if (!config) {
         info_out(3);
         printf("Configuration file not found. Stop.\n");
-        return YAML::Node();
+        return {};
     }
 
     YAML::Node tasks = config["tasks"];
     if (!tasks) {
         info_out(3);
         printf("'tasks' key not found in configuration file. Stop.\n");
-        return YAML::Node();
+        return {};
     }
 
     // Check if default in tasks
@@ -41,9 +42,8 @@ YAML::Node yml_paser() {
 std::string command_paser(const std::string& command) {
     info_out(1);
     printf("Parsing command: %s\n", command.c_str());
-    std::string target;
     if (command.find("tasks.") != std::string::npos) {
-        target = command.substr(6, command.length());
+        std::string target = command.substr(6, command.length());
         return target;
     }
     return "123";
@@ -51,27 +51,24 @@ std::string command_paser(const std::string& command) {
 
 
 std::string cleaner(const std::string& input) {
-    size_t newline_pos = input.find('\n');
-    
     // If a newline is found, return the substring up to that position
-    if (newline_pos != std::string::npos) {
+    if (const size_t newline_pos = input.find('\n'); newline_pos != std::string::npos) {
         return input.substr(0, newline_pos);
     }
     // If no newline is found, return the entire string
     return input;
 }
 
-std::vector<std::string> get_task(const std::string& target) {
+std::vector<std::string> get_task(const std::string& target, std::string& file_name) {
     info_out(1);
     printf("Getting tasks for task: %s\n", target.c_str());
-    YAML::Node tasks;
-    tasks = yml_paser();
+    YAML::Node tasks = yml_paser(file_name);
 
     if (!tasks) {
-        return std::vector<std::string>();
+        return {};
     }
     // Note: Because the var target always has some unknown char, need to clean.
-    std::string cleaned_target = cleaner(target);
+    const std::string cleaned_target = cleaner(target);
     std::vector<std::string> task;
 
     if (!tasks.IsMap()){
@@ -81,7 +78,7 @@ std::vector<std::string> get_task(const std::string& target) {
     }
     if (tasks[cleaned_target].IsNull()) {
         info_out(3);
-        printf("Unkown task. Stop.\n");
+        printf("Unknown task. Stop.\n");
         return task;
     }
     
@@ -94,4 +91,13 @@ std::vector<std::string> get_task(const std::string& target) {
         task.push_back(list[i].as<std::string>());
     }
     return task;
+}
+
+std::string get_command(const int argc, char**& argv) {
+    std::string command;
+    for (int i = 0; i < argc; i++) {
+        command.append(argv[i]);
+        command.append(" ");
+    }
+    return command;
 }

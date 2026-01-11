@@ -188,9 +188,9 @@ if(YAML_CPP_BUILD_TESTS)
   add_subdirectory(test)
 endif()
 
-if(YAML_CPP_BUILD_TOOLS)
-  add_subdirectory(util)
-endif()
+#if(YAML_CPP_BUILD_TOOLS)
+#  add_subdirectory(util)
+#endif()
 
 if (YAML_CPP_FORMAT_SOURCE AND YAML_CPP_CLANG_FORMAT_EXE)
   add_custom_target(format

@@ -14,7 +14,7 @@ Note:
 
 #include "include/main.h"
 
-int main(int argc, char** argv) {
+int main(const int argc, char** argv) {
 
 #ifdef _WIN32 //Enable ANSI Output
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -30,16 +30,18 @@ int main(int argc, char** argv) {
 
 	std::string target;
 
+    std::string file_name;
+
 	//Colorful print will come out soon
     switch (argc) {
     case 1:
-        command_out(argc, argv, 3, 1);
+        command_print(1,get_command(argc,argv));
         printf("No action input. Stop.\n");
         return -1;
 
     case 2:
         if (strcmp(argv[1], "make") == 0) {
-            command_out(argc, argv, 2, 1);
+            command_print(2,get_command(argc,argv));
             printf("No task input. Using default task.\n");
             target = "default";
             break;
@@ -53,11 +55,10 @@ int main(int argc, char** argv) {
             return 0;
         }
         else {
-            command_out(argc, argv, 3, 1);
+            command_print(1, get_command(argc,argv));
             printf("Invalid argument: %s\n", argv[1]);
             return -1;
         }
-        break;
 
     case 3:
         if (strcmp(argv[1], "make") == 0) {
@@ -73,27 +74,25 @@ int main(int argc, char** argv) {
             return 0;
         }
         else {
-            command_out(argc, argv,3, 1);
+            command_print(1,get_command(argc,argv));
             printf("Invalid argument: %s\n", argv[1]);
             return -1;
         }
-        break;
 
     default:
-        command_out(argc, argv, 3, 1);
+        command_print(1, *argv);
         printf("Too many arguments. Stop.\n");
         return -1;
     }
 
-	std::vector<std::string> list;
+    const std::vector<std::string> list = get_task(target,file_name);
 
-	list = get_task(target);
-    if (list.size() == 0) {
-        command_out(argc, argv, 3, 1);
+    if (list.empty()) {
+        command_print(1,get_command(argc,argv));
         printf("Unknown task: %s", target.c_str());
         return -1;
     }
-	int res = execute(list, target);
+	int res = execute(list, target,file_name);
 
 	if (res == 0) {
 		info_out(1);

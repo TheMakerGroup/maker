@@ -57,22 +57,17 @@ int execute_command(const std::string& command) {
     }
 }
 
-int execute(const std::vector<std::string>& task, std::string target, int depth) {
+int execute(const std::vector<std::string>& task, const std::string& target, std::string file_name, int depth) {
     if (depth > 30){
         info_out(3);
         printf("Too deep recursion. Stop.\n");
         return -4;
     }
-    for (int i = 0; i < task.size(); i++) {
-        std::string pass = command_paser(task[i]);
-        if(pass == "123" && !target.empty()){ 
+    for (const auto & i : task) {
+        if(std::string pass = command_paser(i); pass == "123" && !target.empty()){
 			/* Direct command execute */
-            int res = execute_command(task[i]);
-            if (res != 0){
-                info_out(3);
-                printf("\n  In task '%s':",target.c_str());
-                printf("\n    Command:");
-                printf("\n        %s\n", task[i].c_str());
+            if (const int res = execute_command(i); res != 0){
+                print_code_indicator(file_name, i, 1);
                 printf("Command execute error with code %d. Stop.\n", res);
                 return 1;
             }
@@ -81,9 +76,8 @@ int execute(const std::vector<std::string>& task, std::string target, int depth)
             /* Sub-task execute */
             info_out(1);
             printf("Executing sub-task: %s\n", target.c_str());
-            std::vector<std::string> sub_task = get_task(target);
-            int res = execute(sub_task, target);
-            if (res != 0){
+            std::vector<std::string> sub_task = get_task(target, file_name);
+            if (const int res = execute(sub_task, target, file_name); res != 0){
                 return res;
             }
         }
