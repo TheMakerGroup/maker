@@ -22,28 +22,21 @@ int main(const int argc, char** argv) {
     GetConsoleMode(hOut, &mode);
     SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
-
-#ifdef DEBUG // Check if is debug mode
-	info_out(2); //Fix problem here
-	printf("You are using debug release.\n"); // Give a warning
-#endif
-
-	std::string target;
+	std::string _target;
 
     std::string file_name;
 
-	//Colorful print will come out soon
     switch (argc) {
     case 1:
-        command_print(1,get_command(argc,argv));
+        print_status(1);
         printf("No action input. Stop.\n");
         return -1;
 
     case 2:
         if (strcmp(argv[1], "make") == 0) {
-            command_print(2,get_command(argc,argv));
+            print_status(2);
             printf("No task input. Using default task.\n");
-            target = "default";
+            _target = "default";
             break;
         }
         else if (strcmp(argv[1], "-h") == 0) {
@@ -55,14 +48,14 @@ int main(const int argc, char** argv) {
             return 0;
         }
         else {
-            command_print(1, get_command(argc,argv));
+            print_status(1);
             printf("Invalid argument: %s\n", argv[1]);
             return -1;
         }
 
     case 3:
         if (strcmp(argv[1], "make") == 0) {
-            target = argv[2];
+            _target = argv[2];
             break;
         }
         else if (strcmp(argv[1], "-h") == 0) {
@@ -74,28 +67,30 @@ int main(const int argc, char** argv) {
             return 0;
         }
         else {
-            command_print(1,get_command(argc,argv));
+            print_status(1);
             printf("Invalid argument: %s\n", argv[1]);
             return -1;
         }
 
     default:
-        command_print(1, *argv);
+        print_status(1);
         printf("Too many arguments. Stop.\n");
         return -1;
     }
 
+    const std::string target = std::move(_target);
+
     const std::vector<std::string> list = get_task(target,file_name);
 
     if (list.empty()) {
-        command_print(1,get_command(argc,argv));
+        print_status(1);
         printf("Unknown task: %s", target.c_str());
         return -1;
     }
 	int res = execute(list, target,file_name);
 
 	if (res == 0) {
-		info_out(1);
+		print_status(3);
 		printf("All tasks executed successfully.\n");
 	}
 	else if(res == 1){

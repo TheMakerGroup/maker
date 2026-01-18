@@ -8,7 +8,7 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 add_compile_options(-O2 -Wall -Wextra -pedantic -Werror)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif(MSVC)
 add_compile_options(/O2 /W4 /WX)
 endif()
 
@@ -23,8 +23,10 @@ set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Disable yaml-cpp tests" FORCE)
 
 add_subdirectory(depends/yaml-cpp)
 
-add_executable (maker  maker.cpp "include/main.h" "include/print.h" "include/get.h" "include/execute.h" 
-"include/get.cpp" "include/print.cpp" "include/execute.cpp")
+add_executable (maker  maker.cpp
+        "include/main.h"
+        "include/print.h" "include/get.h"     "include/execute.h"
+        "include/get.cpp" "include/print.cpp" "include/execute.cpp")
 
 target_compile_definitions(maker PUBLIC YAML_CPP_STATIC_DEFINE)
 
@@ -32,4 +34,5 @@ target_link_libraries(maker PRIVATE yaml-cpp)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET maker PROPERTY CXX_STANDARD 20)
+  set_property(TARGET maker PROPERTY CXX_STANDARD_REQUIRED ON)
 endif()

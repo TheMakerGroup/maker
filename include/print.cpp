@@ -30,7 +30,7 @@ Options:
 )";
 }
 
-inline void colored_out(const std::string& str, int color) {
+inline void print_colored(const std::string& str, const int color) {
 	// Attention: Some systems may not support ANSI escape codes.
     std::cout << "\033[38;5;" << color << "m" << str;
     // Reset to default color
@@ -43,30 +43,11 @@ inline void colored_out(const std::string& str, int color) {
 //    std::cout << "\033[0m";
 //}
 
-
-/*Note:
-Status 1: Info. Users can ignore it.
-Status 2: Warning. Users need to attention.
-Status 3: Error. Execution stop.
-*/
-void info_out(const int tape) {
-    if (tape == 1){
-        colored_out("I:", 255); //Info, White
-        printf("\n  ");
-    }
-    else if (tape == 2){
-        colored_out("Warning at: ", 208); //Warning, Orange
-    }
-    else if (tape == 3){
-        colored_out("Error at: ", 196); //Error, Red
-    }
-}
-
-inline int get_visual_column(const std::string& utf8_str, size_t byte_pos) {
+inline int get_visual_column(const std::string& utf8_str, const size_t byte_pos) {
     int column = 1;
     size_t i = 0;
     while (i < byte_pos && i < utf8_str.size()) {
-        unsigned char c = static_cast<unsigned char>(utf8_str[i]);
+        auto c = static_cast<unsigned char>(utf8_str[i]);
         if (c < 0x80) {
             column++; i++;
         } else if ((c & 0xE0) == 0xC0) {
@@ -93,9 +74,9 @@ bool read_utf8_file(const std::string& filename, std::vector<std::string>& lines
 
     size_t content_start = 0;
     if (file_content.size() >= 3) {
-        unsigned char bom1 = static_cast<unsigned char>(file_content[0]);
-        unsigned char bom2 = static_cast<unsigned char>(file_content[1]);
-        unsigned char bom3 = static_cast<unsigned char>(file_content[2]);
+        auto bom1 = static_cast<unsigned char>(file_content[0]);
+        auto bom2 = static_cast<unsigned char>(file_content[1]);
+        auto bom3 = static_cast<unsigned char>(file_content[2]);
         if (bom1 == 0xEF && bom2 == 0xBB && bom3 == 0xBF) {
             content_start = 3;
         }
@@ -117,7 +98,7 @@ bool read_utf8_file(const std::string& filename, std::vector<std::string>& lines
 
     size_t pos = 0;
     while (pos < normalized_content.size()) {
-        size_t newline_pos = normalized_content.find('\n', pos);
+        const size_t newline_pos = normalized_content.find('\n', pos);
         if (newline_pos == std::string::npos) {
             lines.push_back(normalized_content.substr(pos));
             break;
@@ -150,7 +131,7 @@ void print_code_indicator(const std::string& filename, const std::string& target
 
     for (int line_num = 1; line_num <= static_cast<int>(lines.size()); line_num++) {
         const std::string& line = lines[line_num - 1];
-        size_t str_start_idx = line.find(target_str);
+        const size_t str_start_idx = line.find(target_str);
         if (str_start_idx == std::string::npos) continue;
 
         if (str_start_idx > 0 && line[str_start_idx - 1] == ' ') {
@@ -165,7 +146,7 @@ void print_code_indicator(const std::string& filename, const std::string& target
         return;
     }
 
-    int target_col_num = get_visual_column(target_line, target_byte_pos);
+    const int target_col_num = get_visual_column(target_line, target_byte_pos);
 
     const int length = target_str.length() - 1;
     std::string code_err;
@@ -190,20 +171,20 @@ void print_code_indicator(const std::string& filename, const std::string& target
     std::cout << third_line << std::endl;
 }
 
-void command_print(int type,const std::string& cmd) {
-    std::string category = "unknown";
+/* This function includes the new style of maker.
+ * Type 1: error.
+ * Type 2: warning.
+ * Type 3: info.
+ */
+void print_status(const int type) {
+    std::string category;
     if (type == 1) {
         category = "\033[1;31merror\033[0m";
     } else if (type == 2) {
         category = "\033[1;38;5;208mwarning\033[0m";
+    } else if (type == 3) {
+        category = "info";
     }
 
-    std::cout << "\033[1m" << "Command line: " << "\033[0m" << category << ": " << std::endl;
-    std::cout << "    " << 1 << " | " << cmd << std::endl;
-    std::cout << "      | ^";
-    const int length = cmd.length();
-    for (int i = 0; i < length; i++) {
-        std::cout << '~';
-    }
-    std::cout << std::endl;
+    std::cout << category << ":" <<std::endl;
 }

@@ -1,7 +1,7 @@
 ﻿#include "main.h"
 
 int execute_command(const std::string& command) {
-    info_out(1);
+    print_status(3);
     printf("Executing command: %s\n", command.c_str());
 #ifdef _WIN32
     FILE* pipe = _popen(command.c_str(), "r");
@@ -9,7 +9,7 @@ int execute_command(const std::string& command) {
     FILE* pipe = popen(command.c_str(), "r");
 #endif
     if (!pipe) {
-        info_out(3);
+        print_status(1);
         printf("System problem.\n");
         printf("Try to popen. Failed. Stop.\n");
         return -1;
@@ -29,7 +29,7 @@ int execute_command(const std::string& command) {
 #else
         pclose(pipe);
 #endif
-        info_out(3);
+        print_status(1);
         printf("System problem.\n");
         printf("Error during command execution. Stop.\n");
         return -2;
@@ -42,7 +42,7 @@ int execute_command(const std::string& command) {
     int return_code = pclose(pipe);
 #endif
     if (return_code == -1) {
-        info_out(3);
+        print_status(1);
         printf("System problem.\n");
         printf("Try to pclose. Failed. Stop.\n");
         return -3;
@@ -57,14 +57,14 @@ int execute_command(const std::string& command) {
     }
 }
 
-int execute(const std::vector<std::string>& task, const std::string& target, std::string file_name, int depth) {
+int execute(const std::vector<std::string>& task, const std::string& target, std::string file_name, const int depth) {
     if (depth > 30){
-        info_out(3);
+        print_status(1);
         printf("Too deep recursion. Stop.\n");
         return -4;
     }
     for (const auto & i : task) {
-        if(std::string pass = command_paser(i); pass == "123" && !target.empty()){
+        if(std::string pass = command_paser(i); pass.empty() && !target.empty()){
 			/* Direct command execute */
             if (const int res = execute_command(i); res != 0){
                 print_code_indicator(file_name, i, 1);
@@ -74,7 +74,7 @@ int execute(const std::vector<std::string>& task, const std::string& target, std
         }
         else{
             /* Sub-task execute */
-            info_out(1);
+            print_status(3);
             printf("Executing sub-task: %s\n", target.c_str());
             std::vector<std::string> sub_task = get_task(target, file_name);
             if (const int res = execute(sub_task, target, file_name); res != 0){
