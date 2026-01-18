@@ -3,7 +3,7 @@
 std::string ver = "1.1";
 
 void about() {
-    printf("maker %s",ver.c_str());
+    printf("maker %s ",ver.c_str());
 std::cout << R"(Copyright (C) 2025  Gueder
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
