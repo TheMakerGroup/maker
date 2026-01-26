@@ -79,3 +79,63 @@ std::string get_command(const int argc, char**& argv) {
     }
     return command;
 }
+
+std::string parser_arg(int argc, char** argv, int& status) {
+    std::string target;
+    switch (argc) {
+    case 1:
+        print_status(1);
+        printf("No action input. Stop.\n");
+        status = 1;
+        return "";
+
+    case 2:
+        if (strcmp(argv[1], "make") == 0) {
+            print_status(2);
+            printf("No task input. Using default task.\n");
+            target = "default";
+            break;
+        }
+        else if (strcmp(argv[1], "-h") == 0) {
+            usage();
+            return "";
+        }
+        else if (strcmp(argv[1], "-v") == 0) {
+            about();
+            return "";
+        }
+        else {
+            print_status(1);
+            printf("Invalid argument: %s\n", argv[1]);
+            status = 1;
+            return "";
+        }
+
+    case 3:
+        if (strcmp(argv[1], "make") == 0) {
+            target = argv[2];
+            break;
+        }
+        else if (strcmp(argv[1], "-h") == 0) {
+            usage();
+            return "";
+        }
+        else if (strcmp(argv[1], "-v") == 0) {
+            about();
+            return "";
+        }
+        else {
+            print_status(1);
+            printf("Invalid argument: %s\n", argv[1]);
+            status = 1;
+            return "";
+        }
+
+    default:
+        print_status(1);
+        printf("Too many arguments. Stop.\n");
+        status = 1;
+        return "";
+    }
+    return target;
+}

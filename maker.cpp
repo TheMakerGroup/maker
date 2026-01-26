@@ -22,63 +22,17 @@ int main(const int argc, char** argv) {
     GetConsoleMode(hOut, &mode);
     SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
-	std::string _target;
 
     std::string file_name;
+	int status;
 
-    switch (argc) {
-    case 1:
-        print_status(1);
-        printf("No action input. Stop.\n");
-        return -1;
+    const std::string target = parser_arg(argc,argv,status);
 
-    case 2:
-        if (strcmp(argv[1], "make") == 0) {
-            print_status(2);
-            printf("No task input. Using default task.\n");
-            _target = "default";
-            break;
-        }
-        else if (strcmp(argv[1], "-h") == 0) {
-            usage();
-            return 0;
-        }
-        else if (strcmp(argv[1], "-v") == 0) {
-            about();
-            return 0;
-        }
-        else {
-            print_status(1);
-            printf("Invalid argument: %s\n", argv[1]);
-            return -1;
-        }
-
-    case 3:
-        if (strcmp(argv[1], "make") == 0) {
-            _target = argv[2];
-            break;
-        }
-        else if (strcmp(argv[1], "-h") == 0) {
-            usage();
-            return 0;
-        }
-        else if (strcmp(argv[1], "-v") == 0) {
-            about();
-            return 0;
-        }
-        else {
-            print_status(1);
-            printf("Invalid argument: %s\n", argv[1]);
-            return -1;
-        }
-
-    default:
-        print_status(1);
-        printf("Too many arguments. Stop.\n");
-        return -1;
-    }
-
-    const std::string target = std::move(_target);
+	if (target.empty() && status == 0) {
+		return 0;
+	}else if (target.empty() && status == 1) {
+		return -1;
+	}
 
     const std::vector<std::string> list = get_task(target,file_name);
 
