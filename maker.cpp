@@ -38,7 +38,7 @@ int main(const int argc, char** argv) {
 
     if (list.empty()) {
         print_status(1);
-        printf("Unknown task: %s", target.c_str());
+        printf("Unknown task: %s\n", target.c_str());
         return -1;
     }
 	int res = execute(list, target,file_name);
