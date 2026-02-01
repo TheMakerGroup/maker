@@ -4,7 +4,8 @@
 
 void usage();
 void about();
-void colored_out(const std::string& str, int color);
-void info_out(int tape);
-void command_out(int argc, char**& argv, int status, int tape);
+void print_colored(const std::string& str, int color);
+void print_info(int tape);
 //void colored_out_extra(const std::string& str);
+void print_code_indicator(const std::string& filename, const std::string& target_str, int msg_type);
+void print_status(int type);

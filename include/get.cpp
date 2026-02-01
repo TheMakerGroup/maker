@@ -1,37 +1,35 @@
 ﻿#include "main.h"
 
-YAML::Node yml_paser() {
-#ifdef DEBUG // Note: test.yml won't be checked in future.
-    const std::vector<std::string> files = { "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml", "test.yml" };
-#else
+YAML::Node yml_paser(std::string& file_name) {
+
     const std::vector<std::string> files = { "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml" };
-#endif
     YAML::Node config;
 
     for (const auto& filename : files) {
         try {
+            file_name = filename;
             config = YAML::LoadFile(filename);
             break;
         }
         catch (const YAML::BadFile&) {}
     }
 
-    if (!config) {
-        info_out(3);
+    if (config.IsNull()) {
+        print_status(1);
         printf("Configuration file not found. Stop.\n");
-        return YAML::Node();
+        return {};
     }
 
     YAML::Node tasks = config["tasks"];
     if (!tasks) {
-        info_out(3);
+        print_status(1);
         printf("'tasks' key not found in configuration file. Stop.\n");
-        return YAML::Node();
+        return {};
     }
 
     // Check if default in tasks
     if (!tasks["default"]) {
-        info_out(2);
+        print_status(2);
         printf("No 'default' task found. Continuing execution.\n");
     }
 
@@ -39,59 +37,105 @@ YAML::Node yml_paser() {
 }
 
 std::string command_paser(const std::string& command) {
-    info_out(1);
-    printf("Parsing command: %s\n", command.c_str());
-    std::string target;
     if (command.find("tasks.") != std::string::npos) {
-        target = command.substr(6, command.length());
+        std::string target = command.substr(6, command.length());
         return target;
     }
-    return "123";
+    return "";
 }
 
-
-std::string cleaner(const std::string& input) {
-    size_t newline_pos = input.find('\n');
-    
-    // If a newline is found, return the substring up to that position
-    if (newline_pos != std::string::npos) {
-        return input.substr(0, newline_pos);
-    }
-    // If no newline is found, return the entire string
-    return input;
-}
-
-std::vector<std::string> get_task(const std::string& target) {
-    info_out(1);
-    printf("Getting tasks for task: %s\n", target.c_str());
-    YAML::Node tasks;
-    tasks = yml_paser();
+std::vector<std::string> get_task(const std::string& target, std::string& file_name) {
+    YAML::Node tasks = yml_paser(file_name);
 
     if (!tasks) {
-        return std::vector<std::string>();
+        return {};
     }
-    // Note: Because the var target always has some unknown char, need to clean.
-    std::string cleaned_target = cleaner(target);
     std::vector<std::string> task;
 
     if (!tasks.IsMap()){
-        info_out(3);
+        print_status(1);
         printf("Invalid tasks format in configuration file. Stop.\n");
         return task;
     }
-    if (tasks[cleaned_target].IsNull()) {
-        info_out(3);
-        printf("Unkown task. Stop.\n");
+    if (tasks[target].IsNull()) {
+        print_status(1);
+        printf("Unknown task. Stop.\n");
         return task;
     }
     
-    YAML::Node list = tasks[cleaned_target];
+    YAML::Node list = tasks[target];
 
     for (int i = 0; i < list.size(); i++) {
-        /* Add task */
-        info_out(1);
-        printf("Adding task: %s\n", list[i].as<std::string>().c_str());
         task.push_back(list[i].as<std::string>());
     }
     return task;
+}
+
+std::string get_command(const int argc, char**& argv) {
+    std::string command;
+    for (int i = 0; i < argc; i++) {
+        command.append(argv[i]);
+        command.append(" ");
+    }
+    return command;
+}
+
+std::string parse_arg(const int argc, char** argv, int& status) {
+    std::string target;
+    switch (argc) {
+    case 1:
+        print_status(1);
+        printf("No action input. Stop.\n");
+        status = 1;
+        return "";
+
+    case 2:
+        if (strcmp(argv[1], "make") == 0) {
+            print_status(2);
+            printf("No task input. Using default task.\n");
+            target = "default";
+            break;
+        }
+        else if (strcmp(argv[1], "-h") == 0) {
+            usage();
+            return "";
+        }
+        else if (strcmp(argv[1], "-v") == 0) {
+            about();
+            return "";
+        }
+        else {
+            print_status(1);
+            printf("Invalid argument: %s\n", argv[1]);
+            status = 1;
+            return "";
+        }
+
+    case 3:
+        if (strcmp(argv[1], "make") == 0) {
+            target = argv[2];
+            break;
+        }
+        else if (strcmp(argv[1], "-h") == 0) {
+            usage();
+            return "";
+        }
+        else if (strcmp(argv[1], "-v") == 0) {
+            about();
+            return "";
+        }
+        else {
+            print_status(1);
+            printf("Invalid argument: %s\n", argv[1]);
+            status = 1;
+            return "";
+        }
+
+    default:
+        print_status(1);
+        printf("Too many arguments. Stop.\n");
+        status = 1;
+        return "";
+    }
+    return target;
 }

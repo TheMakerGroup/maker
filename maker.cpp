@@ -14,7 +14,7 @@ Note:
 
 #include "include/main.h"
 
-int main(int argc, char** argv) {
+int main(const int argc, char** argv) {
 
 #ifdef _WIN32 //Enable ANSI Output
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -23,80 +23,27 @@ int main(int argc, char** argv) {
     SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
 
-#ifdef DEBUG // Check if is debug mode
-	info_out(2); //Fix problem here
-	printf("You are using debug release.\n"); // Give a warning
-#endif
+    std::string file_name;
+	int status;
 
-	std::string target;
+    const std::string target = parse_arg(argc,argv,status);
 
-	//Colorful print will come out soon
-    switch (argc) {
-    case 1:
-        command_out(argc, argv, 3, 1);
-        printf("No action input. Stop.\n");
-        return -1;
+	if (target.empty() && status == 0) {
+		return 0;
+	}else if (target.empty() && status == 1) {
+		return -1;
+	}
 
-    case 2:
-        if (strcmp(argv[1], "make") == 0) {
-            command_out(argc, argv, 2, 1);
-            printf("No task input. Using default task.\n");
-            target = "default";
-            break;
-        }
-        else if (strcmp(argv[1], "-h") == 0) {
-            usage();
-            return 0;
-        }
-        else if (strcmp(argv[1], "-v") == 0) {
-            about();
-            return 0;
-        }
-        else {
-            command_out(argc, argv, 3, 1);
-            printf("Invalid argument: %s\n", argv[1]);
-            return -1;
-        }
-        break;
+    const std::vector<std::string> list = get_task(target,file_name);
 
-    case 3:
-        if (strcmp(argv[1], "make") == 0) {
-            target = argv[2];
-            break;
-        }
-        else if (strcmp(argv[1], "-h") == 0) {
-            usage();
-            return 0;
-        }
-        else if (strcmp(argv[1], "-v") == 0) {
-            about();
-            return 0;
-        }
-        else {
-            command_out(argc, argv,3, 1);
-            printf("Invalid argument: %s\n", argv[1]);
-            return -1;
-        }
-        break;
-
-    default:
-        command_out(argc, argv, 3, 1);
-        printf("Too many arguments. Stop.\n");
+    if (list.empty()) {
+        print_status(1);
+        printf("Unknown task: %s\n", target.c_str());
         return -1;
     }
 
-	std::vector<std::string> list;
-
-	list = get_task(target);
-    if (list.size() == 0) {
-        command_out(argc, argv, 3, 1);
-        printf("Unknown task: %s", target.c_str());
-        return -1;
-    }
-	int res = execute(list, target);
-
-	if (res == 0) {
-		info_out(1);
+    if (const int res = execute(list, target,file_name); res == 0) {
+		print_status(3);
 		printf("All tasks executed successfully.\n");
 	}
 	else if(res == 1){
