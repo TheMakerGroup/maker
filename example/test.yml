@@ -1,4 +1,4 @@
-tasks:
+﻿tasks:
   build:
     - gcc -Wall -Wextra -O2 -o final main.c #Build command
 
