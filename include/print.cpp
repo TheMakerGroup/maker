@@ -69,20 +69,24 @@ bool read_utf8_file(const std::string& filename, std::vector<std::string>& lines
         return false;
     }
 
-    const std::vector<char> file_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    const std::vector content(( //<char>
+        std::istreambuf_iterator(file)),  //<char>
+        std::istreambuf_iterator<char>()
+        );
     file.close();
 
-    size_t content_start = 0;
-    if (file_content.size() >= 3) {
-        auto bom1 = static_cast<unsigned char>(file_content[0]);
-        auto bom2 = static_cast<unsigned char>(file_content[1]);
-        auto bom3 = static_cast<unsigned char>(file_content[2]);
-        if (bom1 == 0xEF && bom2 == 0xBB && bom3 == 0xBF) {
-            content_start = 3;
+    size_t start = 0;
+    if (content.size() >= 3) {
+        const auto bom1 = static_cast<unsigned char>(content[0]);
+        const auto bom2 = static_cast<unsigned char>(content[1]);
+        if (const auto bom3 = static_cast<unsigned char>(content[2]);
+            bom1 == 0xEF && bom2 == 0xBB && bom3 == 0xBF) {
+            start = 3;
         }
     }
 
-    std::string utf8_content(file_content.data() + content_start, file_content.size() - content_start);
+    std::string utf8_content(content.data() + start,
+        content.size() - start);
     std::string normalized_content;
     for (size_t i = 0; i < utf8_content.size(); i++) {
         if (utf8_content[i] == '\r') {
@@ -156,19 +160,19 @@ void print_code_indicator(const std::string& filename, const std::string& target
         code_err.push_back('~');
     }
 
-    std::string first_line = "\033[1m" + filename + ":" + std::to_string(target_line_num) + ":" +
-                             std::to_string(target_col_num) + ": " + "\033[0m" + msg_label + ": ";
-    std::string second_line = "    " + std::to_string(target_line_num) + " | " + target_line;
 
-    std::string line_num_str = std::to_string(target_line_num);
-    int prefix_len = 4 + line_num_str.length() + 3;
-    std::string third_line_prefix = std::string(prefix_len - 2, ' ') + "|";
-    int spaces_before_caret = target_col_num - 1;
-    std::string third_line = third_line_prefix + std::string(spaces_before_caret, ' ') + " ^" + code_err;
+    const std::string line_num_str = std::to_string(target_line_num);
+    const int prefix_len = 4 + line_num_str.length() + 3;
+    const std::string third_line_prefix = std::string(prefix_len - 2, ' ') + "|";
+    const int spaces_before_caret = target_col_num - 1;
 
-    std::cout << first_line << std::endl;
-    std::cout << second_line << std::endl;
-    std::cout << third_line << std::endl;
+    std::cout << "\033[1m" + filename + ":" + std::to_string(target_line_num) + ":" +
+                std::to_string(target_col_num) + ": " + "\033[0m" + msg_label + ": "
+                << std::endl;
+    std::cout << "    " + std::to_string(target_line_num) + " | " + target_line
+                << std::endl;
+    std::cout << third_line_prefix + std::string(spaces_before_caret, ' ') + " ^" + code_err
+                << std::endl;
 }
 
 /* This function includes the new style of maker.

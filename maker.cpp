@@ -26,7 +26,7 @@ int main(const int argc, char** argv) {
     std::string file_name;
 	int status;
 
-    const std::string target = parser_arg(argc,argv,status);
+    const std::string target = parse_arg(argc,argv,status);
 
 	if (target.empty() && status == 0) {
 		return 0;
@@ -41,9 +41,8 @@ int main(const int argc, char** argv) {
         printf("Unknown task: %s\n", target.c_str());
         return -1;
     }
-	int res = execute(list, target,file_name);
 
-	if (res == 0) {
+    if (const int res = execute(list, target,file_name); res == 0) {
 		print_status(3);
 		printf("All tasks executed successfully.\n");
 	}

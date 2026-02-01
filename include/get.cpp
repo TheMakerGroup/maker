@@ -80,7 +80,7 @@ std::string get_command(const int argc, char**& argv) {
     return command;
 }
 
-std::string parser_arg(int argc, char** argv, int& status) {
+std::string parse_arg(const int argc, char** argv, int& status) {
     std::string target;
     switch (argc) {
     case 1:
