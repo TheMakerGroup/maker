@@ -36,12 +36,11 @@ YAML::Node yml_paser(std::string& file_name) {
     return tasks;
 }
 
-std::string command_paser(const std::string& command) {
+bool command_paser(const std::string& command) {
     if (command.find("tasks.") != std::string::npos) {
-        std::string target = command.substr(6, command.length());
-        return target;
+        return false;
     }
-    return "";
+    return true;
 }
 
 std::vector<std::string> get_task(const std::string& target, std::string& file_name) {

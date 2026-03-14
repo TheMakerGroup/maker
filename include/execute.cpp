@@ -64,7 +64,7 @@ int execute(const std::vector<std::string>& task, const std::string& target, std
         return -4;
     }
     for (const auto & i : task) {
-        if(std::string pass = command_paser(i); pass.empty() && !target.empty()){
+        if(bool pass = command_paser(i); pass && !target.empty()){
 			/* Direct command execute */
             if (const int res = execute_command(i); res != 0){
                 print_code_indicator(file_name, i, 1);
