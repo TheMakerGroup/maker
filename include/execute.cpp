@@ -1,6 +1,6 @@
 ﻿#include "main.h"
 
-int execute_command(const std::string& command) {
+auto execute_command(const std::string& command) -> int {
     print_status(3);
     printf("Executing command: %s\n", command.c_str());
 #ifdef _WIN32
@@ -8,7 +8,7 @@ int execute_command(const std::string& command) {
 #else
     FILE* pipe = popen(command.c_str(), "r");
 #endif
-    if (!pipe) {
+    if (pipe == nullptr) {
         print_status(1);
         printf("System problem.\n");
         printf("Try to popen. Failed. Stop.\n");
@@ -51,13 +51,12 @@ int execute_command(const std::string& command) {
     if (return_code == 0) {
         return 0;
     }
-    else {
-        
-        return return_code;
-    }
+     
+    return return_code;
+   
 }
 
-int execute(const std::vector<std::string>& task, const std::string& target, std::string file_name, const int depth) {
+auto execute(const std::vector<std::string>& task, const std::string& target, std::string file_name, const int depth) -> int {
     if (depth > 30){
         print_status(1);
         printf("Too deep recursion. Stop.\n");
@@ -77,7 +76,7 @@ int execute(const std::vector<std::string>& task, const std::string& target, std
             print_status(3);
             printf("Executing sub-task: %s\n", target.c_str());
             std::vector<std::string> sub_task = get_task(target, file_name);
-            if (const int res = execute(sub_task, target, file_name); res != 0){
+            if (const int res = execute(sub_task, target, file_name, depth + 1); res != 0){
                 return res;
             }
         }
