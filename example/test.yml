@@ -1,29 +1,15 @@
 ﻿tasks:
   build:
-    input:
-      - main.c
-    output:
-      - final
-    cmd:
-      - gcc -Wall -Wextra -O2 -o final main.c #Build command
+    - gcc -Wall -Wextra -O2 -o final main.c #Build command
 
   clean:
-    input: []
-    output: []
-    cmd:
-      - echo Cleaning up...
-      - rm -f final
+    - echo Cleaning up...
+    - rm -f final
 
   run:
-    input: []
-    output: []
-    cmd:
-      - echo Running the program...
-      - ./final
+    - echo Running the program...
+    - ./final
   
   default:
-    input: []
-    output: []
-    cmd:
-      - tasks.build
-      - tasks.run
+    - tasks.build
+    - tasks.run

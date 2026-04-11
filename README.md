@@ -1,19 +1,4 @@
 ﻿### This is a tool to build by yaml.  
-> This project uses Linux kernel–style versioning: 
-  minor updates for regular changes, 
-  major updates for legacy removal and compatibility breaks.
-   
-Sometimes the reason of major update is just because the 
-
-big number of minor update.
-
-The minor updates might include breaking changes,
-
-but you can still use old style in future versions,
-
-until a random update.
-
-But the release note will show it.
 
 ## How to use?
 <br>
