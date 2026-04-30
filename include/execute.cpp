@@ -1,5 +1,6 @@
 ﻿#include "main.h"
 
+[[deprecated("Use run_cmd instead.")]]
 int execute_command(const std::string& command) {
     print_status(3);
     printf("Executing command: %s\n", command.c_str());
