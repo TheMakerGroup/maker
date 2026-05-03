@@ -1,6 +1,8 @@
 ﻿#include "main.h"
+#include <uv.h>
 
-[[deprecated("Use run_cmd instead.")]]
+static shell_t* pub_shell = nullptr;
+
 int execute_command(const std::string& command) {
     print_status(3);
     printf("Executing command: %s\n", command.c_str());
@@ -58,30 +60,72 @@ int execute_command(const std::string& command) {
     }
 }
 
-int execute(const std::vector<std::string>& task, const std::string& target, std::string file_name, const int depth) {
-    if (depth > 30){
+int execute(exec args) {
+    if (args.depth > 30){
         print_status(1);
         printf("Too deep recursion. Stop.\n");
         return -4;
     }
-    for (const auto & i : task) {
-        if(bool pass = command_paser(i); pass && !target.empty()){
+    bool is_lagacy = true;
+
+    uv_loop_t* loop = uv_default_loop();
+    shell_t* shell = start_shell(loop);
+    if (!shell) {
+        print_status(2);
+        printf("Shell start failed. Fallback to lagacy mode.\n");
+        is_lagacy = true;
+    }
+    else {
+        // prepare for process exit
+        pub_shell = shell;
+        uv_signal_t sigint;
+        uv_signal_init(uv_default_loop(), &sigint);
+        uv_signal_start(&sigint, on_sigint, SIGINT);
+    }
+
+    for (const auto & i : args.task) {
+        bool pass = command_paser(i);
+        if(pass && !args.target.empty()){
 			/* Direct command execute */
-            if (const int res = execute_command(i); res != 0){
-                print_code_indicator(file_name, i, 1);
-                printf("Command execute error with code %d. Stop.\n", res);
+            int res = 0;
+            if (is_lagacy) {
+                res = execute_command(i);
+            }
+            else {
+                res = shell_exec(shell, i.c_str());
+            }
+            if (res != 0){
+                if (!is_lagacy) {
+                    kill_shell(shell);
+                }
+                print_code_indicator(args.file_name, i, 1);
+                printf("Command execute error. Stop.\n");
                 return 1;
             }
         }
         else{
             /* Sub-task execute */
             print_status(3);
-            printf("Executing sub-task: %s\n", target.c_str());
-            std::vector<std::string> sub_task = get_task(target, file_name);
-            if (const int res = execute(sub_task, target, file_name); res != 0){
+            printf("Executing sub-task: %s\n", args.target.c_str());
+            std::vector<std::string> sub_task = get_task(args.target, args.file_name);
+            exec sub = { sub_task, args.target, args.file_name };
+            const int res = execute(sub);
+            if (res != 0){
                 return res;
             }
         }
     }
     return 0; //default return
+}
+void on_sigint(uv_signal_t* handle, int signum) {
+    (void)signum;
+
+    uv_signal_stop(handle);
+    uv_close((uv_handle_t*)handle, NULL);
+
+    kill_shell(pub_shell);
+
+    uv_stop(uv_default_loop());
+
+    pub_shell = nullptr;
 }

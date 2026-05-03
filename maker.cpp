@@ -31,7 +31,7 @@ int main(const int argc, char** argv) {
 	if (target.empty() && status == 0) {
 		return 0;
 	}else if (target.empty() && status == 1) {
-		return -1;
+		return 1;
 	}
 
     const std::vector<std::string> list = get_task(target,file_name);
@@ -39,15 +39,16 @@ int main(const int argc, char** argv) {
     if (list.empty()) {
         print_status(1);
         printf("Unknown task: %s\n", target.c_str());
-        return -1;
+        return 2;
     }
-
-    if (const int res = execute(list, target,file_name); res == 0) {
+    exec arg = { list, target, file_name };
+    const int res = execute(arg);
+    if ( res == 0) {
 		print_status(3);
 		printf("All tasks executed successfully.\n");
 	}
 	else if(res == 1){
-		return -1;
+		return 1;
 	}
 	return 0;
 }

@@ -14,6 +14,7 @@
 #include "print.h"
 #include "get.h"
 #include "execute.h"
+#include "cmd.h"
 
 #ifdef _WIN32
 #include <cstring>

@@ -1,15 +1,9 @@
-﻿cmake_minimum_required (VERSION 3.10)
+﻿cmake_minimum_required (VERSION 3.24)
 
 
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-add_compile_options(-O2 -Wall -Wextra -pedantic -Werror)
-elseif(MSVC)
-add_compile_options(/O2 /W4 /WX)
 endif()
 
 project ("maker")
@@ -27,7 +21,10 @@ add_subdirectory(depends/libuv)
 add_executable (maker  maker.cpp
         "include/main.h"
         "include/print.h" "include/get.h"     "include/execute.h"
-        "include/get.cpp" "include/print.cpp" "include/execute.cpp")
+        "include/get.cpp" "include/print.cpp" "include/execute.cpp"
+        "include/cmd.c")
+
+set_target_properties(maker PROPERTIES COMPILE_WARNING_AS_ERROR ON)
 
 target_compile_definitions(maker PUBLIC YAML_CPP_STATIC_DEFINE)
 
@@ -37,4 +34,11 @@ target_link_libraries(maker PRIVATE uv_a)
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET maker PROPERTY CXX_STANDARD 20)
   set_property(TARGET maker PROPERTY CXX_STANDARD_REQUIRED ON)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+target_compile_options(maker PRIVATE -O2 -Wall -Wextra -pedantic)
+elseif(MSVC)
+target_compile_options(maker PRIVATE /O2 /W4)
+add_compile_options(/showIncludes-)
 endif()

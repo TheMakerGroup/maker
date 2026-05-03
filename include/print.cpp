@@ -152,7 +152,7 @@ void print_code_indicator(const std::string& filename, const std::string& target
 
     const int target_col_num = get_visual_column(target_line, target_byte_pos);
 
-    const int length = target_str.length() - 1;
+    const size_t length = target_str.length() - 1;
     std::string code_err;
 
     for (int i = 0; i < length; i++)
@@ -162,7 +162,7 @@ void print_code_indicator(const std::string& filename, const std::string& target
 
 
     const std::string line_num_str = std::to_string(target_line_num);
-    const int prefix_len = 4 + line_num_str.length() + 3;
+    const size_t prefix_len = 4 + line_num_str.length() + 3;
     const std::string third_line_prefix = std::string(prefix_len - 2, ' ') + "|";
     const int spaces_before_caret = target_col_num - 1;
 
