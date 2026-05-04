@@ -24,7 +24,7 @@ int main(const int argc, char** argv) {
 #endif
 
     std::string file_name;
-	int status;
+	int status = 0;
 
     const std::string target = parse_arg(argc,argv,status);
 
