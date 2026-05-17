@@ -176,13 +176,16 @@ void print_code_indicator(const std::string& filename, const std::string& target
 }
 
 /* This function includes the new style of maker.
+ * Type 0: fatal error.
  * Type 1: error.
  * Type 2: warning.
  * Type 3: info.
  */
 void print_status(const int type) {
     std::string category;
-    if (type == 1) {
+    if (type == 0){
+        category = "\033[1;31mfatal error\033[0m";
+    }else if (type == 1) {
         category = "\033[1;31merror\033[0m";
     } else if (type == 2) {
         category = "\033[1;38;5;208mwarning\033[0m";
