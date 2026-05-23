@@ -1,4 +1,5 @@
 ﻿#include <uv.h>
+#include <stdbool.h>
 
 typedef struct shell_s {
     uv_loop_t* loop;
