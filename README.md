@@ -1,4 +1,23 @@
-﻿### This is a tool to build by yaml.  
+﻿# This branch is deprecated.
+>
+> This branch is deprecated and **no longer maintained**.
+>
+> DO NOT use code here for any usage!
+
+## Notice
+- No new commits or pull requests will be accepted.
+- This branch will be stored as deprecated/v1.2-dev.
+- New branch v1.2-dev will replace it.
+
+## Reason
+Code about libuv is **hard to maintain**.
+
+## Next Step
+The new code will use **boost.process** to replace libuv.
+
+Code here is only used to store.
+
+### This is a tool to build by yaml.  
 
 ## How to use?
 <br>
