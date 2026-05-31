@@ -22,6 +22,7 @@ set(YAML_CPP_BUILD_SHARED_LIBS OFF CACHE BOOL "Build yaml-cpp as static library"
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Disable yaml-cpp tests" FORCE)
 
 add_subdirectory(depends/yaml-cpp)
+add_subdirectory(depends/tiny-process-library)
 
 add_executable (maker  maker.cpp
         "include/main.h"
@@ -31,6 +32,7 @@ add_executable (maker  maker.cpp
 target_compile_definitions(maker PUBLIC YAML_CPP_STATIC_DEFINE)
 
 target_link_libraries(maker PRIVATE yaml-cpp)
+target_link_libraries(maker PRIVATE tiny-process-library)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET maker PROPERTY CXX_STANDARD 20)
