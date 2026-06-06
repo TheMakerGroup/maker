@@ -27,7 +27,8 @@ add_subdirectory(depends/tiny-process-library)
 add_executable (maker  maker.cpp
         "include/main.h"
         "include/print.h" "include/get.h"     "include/execute.h"
-        "include/get.cpp" "include/print.cpp" "include/execute.cpp")
+        "include/get.cpp" "include/print.cpp" "include/execute.cpp"
+        "include/shell.hpp"  "include/shell.cpp")
 
 target_compile_definitions(maker PUBLIC YAML_CPP_STATIC_DEFINE)
 

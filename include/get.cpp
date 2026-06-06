@@ -1,18 +1,14 @@
 ﻿#include "main.h"
 
-YAML::Node yml_paser(std::string& file_name) {
+YAML::Node yml_paser(const std::string file_name) {
 
-    const std::vector<std::string> files = { "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml" };
+    
     YAML::Node config;
 
-    for (const auto& filename : files) {
-        try {
-            file_name = filename;
-            config = YAML::LoadFile(filename);
-            break;
-        }
-        catch (const YAML::BadFile&) {}
+    try {
+        config = YAML::LoadFile(file_name);
     }
+    catch (const YAML::BadFile&) {}
 
     if (config.IsNull()) {
         print_status(1);
@@ -44,7 +40,17 @@ bool command_paser(const std::string& command) {
 }
 
 std::vector<std::string> get_task(const std::string& target, std::string& file_name) {
-    YAML::Node tasks = yml_paser(file_name);
+    static const std::vector<std::string> files = { 
+        "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml" 
+    };
+    YAML::Node tasks;
+    for(auto& item:files){
+        tasks = yml_paser(item);
+        if(tasks){
+            file_name = item;
+            break;
+        }
+    }
 
     if (!tasks) {
         return {};
@@ -64,7 +70,7 @@ std::vector<std::string> get_task(const std::string& target, std::string& file_n
     
     YAML::Node list = tasks[target];
 
-    for (int i = 0; i < list.size(); i++) {
+    for (size_t i = 0; i < list.size(); i++) {
         task.push_back(list[i].as<std::string>());
     }
     return task;

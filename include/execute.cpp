@@ -1,8 +1,8 @@
 ﻿#include "main.h"
+#include "print.h"
+#include "shell.hpp"
 
 int execute_command(const std::string& command) {
-    print_status(3);
-    printf("Executing command: %s\n", command.c_str());
 #ifdef _WIN32
     FILE* pipe = _popen(command.c_str(), "r");
 #else
@@ -63,10 +63,26 @@ int execute(const std::vector<std::string>& task, const std::string& target, std
         printf("Too deep recursion. Stop.\n");
         return -4;
     }
+    bool is_legacy = false;
+    shell_t* shell = start_shell();
+    if(!shell){
+        is_legacy = true;
+        print_status(2);
+        printf("Shell start failed. Fallback to legacy mode.\n");
+    }
+
     for (const auto & i : task) {
         if(bool pass = command_paser(i); pass && !target.empty()){
 			/* Direct command execute */
-            if (const int res = execute_command(i); res != 0){
+            print_status(3);
+            printf("Executing command: %s\n", i.c_str());
+            int res = 0;
+            if(is_legacy){
+                res = execute_command(i); 
+            }else{
+                res = run_command(shell, i);
+            }
+            if (res != 0){
                 print_code_indicator(file_name, i, 1);
                 printf("Command execute error with code %d. Stop.\n", res);
                 return 1;
