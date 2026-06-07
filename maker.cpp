@@ -12,6 +12,7 @@ Note:
 */
 
 
+#include "include/get.h"
 #include "include/main.h"
 
 int main(const int argc, char** argv) {
@@ -24,30 +25,33 @@ int main(const int argc, char** argv) {
 #endif
 
     std::string file_name;
-	int status;
 
-    const std::string target = parse_arg(argc,argv,status);
+    //const std::string target = parse_arg(argc,argv,status);
+    arg_t result = parse_arguments(argc, argv);
 
-	if (target.empty() && status == 0) {
-		return 0;
-	}else if (target.empty() && status == 1) {
-		return -1;
+    if(result.should_exit){
+        return 0;
+    }
+
+	if (result.make_target.empty()) {
+		return 1;
 	}
 
-    const std::vector<std::string> list = get_task(target,file_name);
+    const std::vector<std::string> list = get_task(result.make_target);
 
     if (list.empty()) {
         print_status(1);
-        printf("Unknown task: %s\n", target.c_str());
+        printf("Unknown task: %s\n", result.make_target.c_str());
         return -1;
     }
 
-    if (const int res = execute(list, target,file_name); res == 0) {
+    if (const int res = execute(
+        {list, result.make_target,result.force_legacy}
+    ); res == 0) {
 		print_status(3);
 		printf("All tasks executed successfully.\n");
-	}
-	else if(res == 1){
-		return -1;
-	}
+	}else{
+        return 1;
+    }
 	return 0;
 }
