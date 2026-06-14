@@ -14,22 +14,26 @@ class shell_t {
     friend void kill_shell(shell_t*&);
 
 private:
-    TinyProcessLib::Process* _process = nullptr;
-    std::atomic<bool> _valid{false};
-    std::atomic<int>  _exit_code{-1};
-    std::mutex _mtx;
+    TinyProcessLib::Process* process_ = nullptr;
+    std::atomic<bool> valid_{false};
+    std::atomic<bool> done_{false};
+    std::string output_buffer_;   // accumulate output to handle split done marker
+    std::mutex mtx_;
+    int last_exit_code_ = -1;     // exit code of last executed command
 
+    // disable copy/move semantics to prevent double free
     shell_t(const shell_t&) = delete;
     shell_t& operator=(const shell_t&) = delete;
+    shell_t(shell_t&&) = delete;
+    shell_t& operator=(shell_t&&) = delete;
+
     shell_t() = default;
 
     bool start();
     bool is_running();
-    void write(const std::string& cmd);  // 修复：统一返回值为void
+    bool is_running_locked();  // internal unlocked version to avoid deadlock
+    void write(const std::string& cmd);
     void destroy();
-    void reset_status(){
-        this->_exit_code = -1;
-    }  // 修复：正确声明函数
 
 public:
     ~shell_t();

@@ -32,7 +32,7 @@ YAML::Node yml_paser(const std::string file_name) {
     return tasks;
 }
 
-bool command_paser(const std::string& command) {
+bool command_parser(const std::string& command) {
     if (command.find("tasks.") != std::string::npos) {
         return false;
     }

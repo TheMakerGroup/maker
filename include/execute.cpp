@@ -1,7 +1,21 @@
-﻿#include "main.h"
+﻿#include "execute.hpp"
 #include "print.h"
 #include "shell.hpp"
+#include <cstdio>
+#include <string>
 
+#ifdef _WIN32
+#else
+#include <sys/wait.h>
+#endif
+
+// external dependency declarations
+extern bool command_parser(const std::string& cmd);
+extern std::vector<std::string> get_task(const std::string& name);
+
+// ------------------------------
+// global command execution via popen
+// ------------------------------
 int execute_command(const std::string& command) {
 #ifdef _WIN32
     FILE* pipe = _popen(command.c_str(), "r");
@@ -14,14 +28,11 @@ int execute_command(const std::string& command) {
         printf("Try to popen. Failed. Stop.\n");
         return -1;
     }
- 
+
     try {
-        // read output
         char buffer[128];
-        std::string result;
         while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-            std::cout << buffer;  // print result
-            result += buffer;
+            printf("%s", buffer);
         }
     } catch (...) {
 #ifdef _WIN32
@@ -34,79 +45,157 @@ int execute_command(const std::string& command) {
         printf("Error during command execution. Stop.\n");
         return -2;
     }
- 
-    // get status
+
+    // extract real exit code (Linux requires WEXITSTATUS macro)
 #ifdef _WIN32
     int return_code = _pclose(pipe);
 #else
-    int return_code = pclose(pipe);
-#endif
-    if (return_code == -1) {
+    int status = pclose(pipe);
+    if (status == -1) {
         print_status(1);
         printf("System problem.\n");
         printf("Try to pclose. Failed. Stop.\n");
         return -3;
     }
+    int return_code = WEXITSTATUS(status);
+#endif
 
-    if (return_code == 0) {
-        return 0;
+    return return_code;
+}
+
+// ------------------------------
+// maker::executor_t implementation
+// ------------------------------
+namespace maker {
+
+executor_t::executor_t(bool force_legacy) {
+    if (force_legacy) {
+        is_legacy_ = true;
+        return;
     }
-    else {
-        
-        return return_code;
+
+    shell_ptr_ = start_shell();
+    if (!shell_ptr_) {
+        is_legacy_ = true;
+        print_status(2);
+        printf("Shell start failed. Fallback to legacy mode.\n");
     }
 }
 
+executor_t::~executor_t() {
+    if (shell_ptr_) {
+        kill_shell(shell_ptr_);
+        shell_ptr_ = nullptr;
+    }
+}
+
+bool executor_t::legacy_run(const std::string& command) {
+    if (!is_valid_) {
+        return false;
+    }
+
+    FILE* pipe = sys_popen(command.c_str(), "r");
+    if (!pipe) {
+        print_status(1);
+        printf("Try to popen. Failed. Stop.\n");
+        is_valid_ = false;
+        return false;
+    }
+
+    try {
+        char buffer[128];
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            printf("%s", buffer);
+        }
+    } catch (...) {
+        sys_pclose(pipe);
+        print_status(1);
+        printf("Error during command execution. Stop.\n");
+        return false;
+    }
+
+    int return_code = sys_pclose(pipe);
+#ifndef _WIN32
+    if (return_code != -1) {
+        return_code = WEXITSTATUS(return_code);
+    }
+#endif
+
+    if (return_code == -1) {
+        print_status(1);
+        printf("Try to pclose. Failed. Stop.\n");
+        return false;
+    }
+
+    return return_code == 0;
+}
+
+bool executor_t::new_run(const std::string& command) {
+    if (!is_valid_) {
+        return false;
+    }
+    return run_command(shell_ptr_, command);
+}
+
+bool executor_t::execute_command(const std::string& command) {
+    if (is_legacy_) {
+        return legacy_run(command);
+    }
+    return new_run(command);
+}
+
+} // namespace maker
+
+// ------------------------------
+// task execution entry
+// ------------------------------
 int execute(const exec_t& args) {
-    if (args.depth > 30){
+    if (args.depth > 30) {
         print_status(1);
         printf("Too deep recursion. Stop.\n");
         return -4;
     }
-    bool is_legacy = false;
-    shell_t* shell = nullptr;
-    if(!args.force_legacy){
-        shell = start_shell();
-        if(!shell){
-            is_legacy = true;
-            print_status(2);
-            printf("Shell start failed. Fallback to legacy mode.\n");
-        }
-    }else{
-        is_legacy = true;
-    }
 
-    for (const auto & i : args.task) {
-        if(bool pass = command_paser(i); pass && !args.target.empty()){
-			/* Direct command execute */
+    auto executor = std::make_unique<maker::executor_t>(args.force_legacy);
+
+    for (const auto& item : args.task) {
+        bool is_direct_cmd = command_parser(item);
+        if (is_direct_cmd && !args.target.empty()) {
+            // execute command directly
             print_status(3);
-            printf("Executing command: %s\n", i.c_str());
-            int res = 0;
-            if(is_legacy){
-                res = execute_command(i); 
-            }else{
-                res = run_command(shell, i);
-            }
-            if (res != 0){
-                //print_code_indicator(file_name, i, 1);
+            printf("Executing command: %s\n",item.c_str());
+            bool success = executor->execute_command(item);
+            if (!success) {
                 print_status(1);
-                printf("Command execute error with code %d. Stop.\n", res);
+                printf("Command execute failed. Stop.\n");
                 return 1;
             }
-        }
-        else{
-            /* Sub-task execute */
-            std::string sub_task_name = i.substr(5);
+        } else {
+            // execute subtask
+            constexpr size_t SUBTASK_PREFIX_LEN = 5;
+            if (item.size() < SUBTASK_PREFIX_LEN) {
+                print_status(1);
+                printf("Invalid subtask format: %s. Stop.\n", item.c_str());
+                return 1;
+            }
+
+            std::string sub_task_name = item.substr(SUBTASK_PREFIX_LEN);
             print_status(3);
-            printf("Executing sub-task: %s\n", sub_task_name.c_str());
-            exec_t arg_sub = {get_task(sub_task_name),
-                            sub_task_name,
-                            args.depth + 1,
-                            args.force_legacy};
-            if (const int res = execute(arg_sub); res != 0){
+            printf("Executing subtask: %s\n", sub_task_name.c_str());
+
+            exec_t sub_args = {
+                get_task(sub_task_name),
+                sub_task_name,
+                args.depth + 1,
+                args.force_legacy
+            };
+
+            int res = execute(sub_args);
+            if (res != 0) {
                 return res;
             }
         }
     }
-    return 0; //default return
+
+    return 0;
 }

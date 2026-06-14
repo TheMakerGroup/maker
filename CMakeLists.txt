@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.10)
+﻿cmake_minimum_required (VERSION 3.15)
 
 
 if (POLICY CMP0141)
@@ -26,9 +26,9 @@ add_subdirectory(depends/tiny-process-library)
 
 add_executable (maker  maker.cpp
         "include/main.h"
-        "include/print.h" "include/get.h"     "include/execute.h"
+        "include/print.h" "include/get.h"     "include/execute.hpp"
         "include/get.cpp" "include/print.cpp" "include/execute.cpp"
-        "include/shell.hpp"  "include/shell.cpp")
+        "include/shell.hpp"  "include/shell.cpp" "include/root.hpp")
 
 target_compile_definitions(maker PUBLIC YAML_CPP_STATIC_DEFINE)
 
@@ -38,4 +38,24 @@ target_link_libraries(maker PRIVATE tiny-process-library)
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET maker PROPERTY CXX_STANDARD 20)
   set_property(TARGET maker PROPERTY CXX_STANDARD_REQUIRED ON)
+endif()
+
+
+
+if(MSVC)
+  set(FLAGS_VARS
+    CMAKE_C_FLAGS
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_C_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS
+    CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_CXX_FLAGS_RELEASE
+  )
+  foreach(var ${FLAGS_VARS})
+    # 替换运行库
+    string(REPLACE "/MD" "/MT" ${var} "${${var}}")
+    string(REPLACE "/MDd" "/MTd" ${var} "${${var}}")
+    # 替换警告等级 /W3 → /W4
+    string(REPLACE "/W3" "/W4" ${var} "${${var}}")
+  endforeach()
 endif()
