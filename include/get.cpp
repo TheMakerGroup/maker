@@ -1,23 +1,27 @@
 ﻿#include "get.h"
 #include "print.h"
+#include "get.h"
+
+#include <cstdlib>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
+constexpr std::string config_file_name = "maker.yaml";
+
 YAML::Node yml_paser(const std::string& file_name) {
 
-    
     YAML::Node config;
 
     try {
         config = YAML::LoadFile(file_name);
     }catch (const YAML::BadFile&) {
-        print_status(1);
-        printf("Error file.\n");
-        return {};
+        throw std::runtime_error("Can't load configuration file. Stop.\n");
     }
 
     if (config.IsNull()) {
+        throw std::runtime_error("Empty configuration file. Stop.\n");
         print_status(1);
         printf("Configuration file not found. Stop.\n");
         return {};
@@ -25,9 +29,7 @@ YAML::Node yml_paser(const std::string& file_name) {
 
     YAML::Node tasks = config["tasks"];
     if (!tasks) {
-        print_status(1);
-        printf("'tasks' key not found in configuration file. Stop.\n");
-        return {};
+        throw std::runtime_error("'tasks' key not found in configuration file. Stop.\n");
     }
 
     // Check if default in tasks
@@ -47,35 +49,23 @@ bool command_parser(const std::string& command) {
 }
 
 std::vector<std::string> get_task(const std::string& target) {
-    static const std::vector<std::string> files = { 
-        "maker.yml", "Maker.yml", "maker.yaml", "Maker.yaml" 
-    };
-    YAML::Node tasks;
-    for(auto& item:files){
-        tasks = yml_paser(item);
-        if(tasks){
-            break;
-        }
-    }
-
+    
+    YAML::Node tasks = yml_paser(config_file_name);
     if (!tasks) {
         return {};
     }
     std::vector<std::string> task;
 
     if (!tasks.IsMap()){
-        print_status(1);
-        printf("Invalid tasks format in configuration file. Stop.\n");
-        return task;
+        throw std::runtime_error("Invalid tasks format in configuration file. Stop.\n");
     }
     if (tasks[target].IsNull()) {
-        print_status(1);
-        printf("Unknown task. Stop.\n");
-        return task;
+        throw std::runtime_error("Unknown task. Stop.\n");
     }
     
     YAML::Node list = tasks[target];
 
+    task.reserve(list.size());
     for (size_t i = 0; i < list.size(); i++) {
         task.push_back(list[i].as<std::string>());
     }
@@ -120,7 +110,6 @@ arg_t parse_arguments(const int argc, char** argv) {
         if (cmd_iterator == g_command_map.end()) {
             print_status(1);
             printf("Invalid argument: %s\n", current_arg.c_str());
-            result.exit_code = 1;
             result.should_exit = true;
             result.is_err = true;
             return result;

@@ -25,8 +25,8 @@ using arg_t = struct parse_result {
 
 static const std::unordered_map<std::string, cmd> g_command_map = {
     {"make", cmd::MAKE},
-    {"-h", cmd::HELP},
-    {"-v", cmd::VERSION},
+    {"help", cmd::HELP},
+    {"version", cmd::VERSION},
     {"--force-legacy", cmd::FORCE_LEGACY}
 };
 

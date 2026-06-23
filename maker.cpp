@@ -15,6 +15,7 @@ Note:
 #include "include/get.h"
 #include "include/print.h"
 #include "include/execute.hpp"
+#include <stdexcept>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -44,7 +45,14 @@ int main(const int argc, char** argv) {
 		return 1;
 	}
 
-    const std::vector<std::string> list = get_task(result.make_target);
+    std::vector<std::string> list;
+    try{
+        list = get_task(result.make_target);
+    }catch(std::runtime_error& e){
+        print_status(1);
+        printf("%s", e.what());
+        return 1;
+    }
 
     if (list.empty()) {
         print_status(1);
