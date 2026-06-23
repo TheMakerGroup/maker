@@ -4,6 +4,7 @@
 #include "shell.hpp"
 #include <array>
 #include <cstdio>
+#include <stdexcept>
 #include <string>
 
 #ifdef _WIN32
@@ -181,9 +182,19 @@ int execute(const exec_t& args) {
             std::string sub_task_name = item.substr(SUBTASK_PREFIX_LEN);
             print_status(3);
             printf("Executing subtask: %s\n", sub_task_name.c_str());
+            
+            
+            std::vector<std::string> tmp;
+            try{
+                tmp = get_task(sub_task_name);
+            }catch(std::runtime_error& e){
+                print_status(1);
+                printf("%s", e.what());
+                return 1;
+            }
 
             exec_t sub_args = {
-                .task=get_task(sub_task_name),
+                .task=std::move(tmp),
                 .target=sub_task_name,
                 .depth=args.depth + 1,
                 .force_legacy=args.force_legacy
