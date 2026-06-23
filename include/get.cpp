@@ -85,7 +85,6 @@ arg_t parse_arguments(const int argc, char** argv) {
     arg_t result{};
     // Initialize all fields with explicit default values
     result.make_target = "";
-    result.exit_code = 0;
     result.should_exit = false;
     result.command = cmd::NO_COMMAND;
     result.force_legacy = false;
@@ -94,7 +93,6 @@ arg_t parse_arguments(const int argc, char** argv) {
     if (argc == 1) {
         print_status(1);
         printf("No action input. Stop.\n");
-        result.exit_code = 1;
         result.should_exit = true;
         result.is_err = true;
         return result;
@@ -172,7 +170,6 @@ arg_t parse_arguments(const int argc, char** argv) {
     if (result.command == cmd::NO_COMMAND) {
         print_status(1);
         printf("No valid command specified. Stop.\n");
-        result.exit_code = 1;
         result.should_exit = true;
     }
 

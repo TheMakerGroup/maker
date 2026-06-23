@@ -16,7 +16,6 @@ enum class cmd : uint8_t {
 
 using arg_t = struct parse_result {
     std::string make_target;
-    int exit_code;
     bool should_exit;
     bool is_err;
     cmd command;
