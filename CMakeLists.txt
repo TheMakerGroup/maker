@@ -25,7 +25,6 @@ add_subdirectory(depends/yaml-cpp)
 add_subdirectory(depends/tiny-process-library)
 
 add_executable (maker  maker.cpp
-        "include/main.h"
         "include/print.h" "include/get.h"     "include/execute.hpp"
         "include/get.cpp" "include/print.cpp" "include/execute.cpp"
         "include/shell.hpp"  "include/shell.cpp" "include/root.hpp")
@@ -52,10 +51,8 @@ if(MSVC)
     CMAKE_CXX_FLAGS_RELEASE
   )
   foreach(var ${FLAGS_VARS})
-    # 替换运行库
     string(REPLACE "/MD" "/MT" ${var} "${${var}}")
     string(REPLACE "/MDd" "/MTd" ${var} "${${var}}")
-    # 替换警告等级 /W3 → /W4
     string(REPLACE "/W3" "/W4" ${var} "${${var}}")
   endforeach()
 endif()

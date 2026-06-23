@@ -1,6 +1,8 @@
 ﻿#include "execute.hpp"
+#include "get.h"
 #include "print.h"
 #include "shell.hpp"
+#include <array>
 #include <cstdio>
 #include <string>
 
@@ -9,9 +11,6 @@
 #include <sys/wait.h>
 #endif
 
-// external dependency declarations
-extern bool command_parser(const std::string& cmd);
-extern std::vector<std::string> get_task(const std::string& name);
 
 // ------------------------------
 // global command execution via popen
@@ -32,7 +31,7 @@ int execute_command(const std::string& command) {
     try {
         char buffer[128];
         while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-            printf("%s", buffer);
+            printf("111%s", buffer);
         }
     } catch (...) {
 #ifdef _WIN32
@@ -103,9 +102,9 @@ bool executor_t::legacy_run(const std::string& command) {
     }
 
     try {
-        char buffer[128];
-        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-            printf("%s", buffer);
+        std::array<char, 128> buffer;
+        while (fgets(buffer.data(), sizeof(buffer), pipe) != nullptr) {
+            printf("%s", buffer.data());
         }
     } catch (...) {
         sys_pclose(pipe);
@@ -184,10 +183,10 @@ int execute(const exec_t& args) {
             printf("Executing subtask: %s\n", sub_task_name.c_str());
 
             exec_t sub_args = {
-                get_task(sub_task_name),
-                sub_task_name,
-                args.depth + 1,
-                args.force_legacy
+                .task=get_task(sub_task_name),
+                .target=sub_task_name,
+                .depth=args.depth + 1,
+                .force_legacy=args.force_legacy
             };
 
             int res = execute(sub_args);

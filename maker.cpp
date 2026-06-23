@@ -13,7 +13,11 @@ Note:
 
 
 #include "include/get.h"
-#include "include/main.h"
+#include "include/print.h"
+#include "include/execute.hpp"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int main(const int argc, char** argv) {
 
@@ -24,10 +28,13 @@ int main(const int argc, char** argv) {
     SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
 
-    std::string file_name;
 
     //const std::string target = parse_arg(argc,argv,status);
-    arg_t result = parse_arguments(argc, argv);
+    const arg_t result = parse_arguments(argc, argv);
+
+    if(result.is_err){
+        return 1;
+    }
 
     if(result.should_exit){
         return 0;
@@ -46,7 +53,7 @@ int main(const int argc, char** argv) {
     }
 
     if (const int res = execute(
-        {list, result.make_target,result.force_legacy}
+        {.task=list, .target=result.make_target,.depth=0,.force_legacy=result.force_legacy}
     ); res == 0) {
 		print_status(3);
 		printf("All tasks executed successfully.\n");

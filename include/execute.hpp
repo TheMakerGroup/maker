@@ -1,18 +1,16 @@
 ﻿#pragma once
 
-#include "main.h"
 #include "root.hpp"
 #include "shell.hpp"
 #include <string>
-#include <memory>
 #include <vector>
 
-typedef struct exec_args {
+using exec_t = struct exec_args {
     const std::vector<std::string> task;
     const std::string target;
     int depth = 0;
     bool force_legacy = false;
-} exec_t;
+};
 
 namespace maker {
     class executor_t {
@@ -33,7 +31,7 @@ namespace maker {
 #endif
 
     public:
-        explicit executor_t(bool force_legacy = false);
+        explicit executor_t(bool force_legacy);
         ~executor_t();
 
         // disable copy/move to avoid double free of shell resource

@@ -1,8 +1,12 @@
 ﻿#pragma once
 
-#include "main.h"
+#include <cstdint>
+#include <string>
+#include <unordered_map>
 
-enum class cmd {
+#include <yaml-cpp/yaml.h>
+
+enum class cmd : uint8_t {
     NO_COMMAND,
     MAKE,
     HELP,
@@ -10,13 +14,14 @@ enum class cmd {
     FORCE_LEGACY
 };
 
-typedef struct parse_result {
+using arg_t = struct parse_result {
     std::string make_target;
     int exit_code;
     bool should_exit;
+    bool is_err;
     cmd command;
     bool force_legacy;
-} arg_t;
+};
 
 static const std::unordered_map<std::string, cmd> g_command_map = {
     {"make", cmd::MAKE},

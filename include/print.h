@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "main.h"
+#include <string>
 
 void usage();
 void about();
