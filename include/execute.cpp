@@ -12,57 +12,6 @@
 #include <sys/wait.h>
 #endif
 
-
-// ------------------------------
-// global command execution via popen
-// ------------------------------
-int execute_command(const std::string& command) {
-#ifdef _WIN32
-    FILE* pipe = _popen(command.c_str(), "r");
-#else
-    FILE* pipe = popen(command.c_str(), "r");
-#endif
-    if (!pipe) {
-        print_status(1);
-        printf("System problem.\n");
-        printf("Try to popen. Failed. Stop.\n");
-        return -1;
-    }
-
-    try {
-        char buffer[128];
-        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-            printf("111%s", buffer);
-        }
-    } catch (...) {
-#ifdef _WIN32
-        _pclose(pipe);
-#else
-        pclose(pipe);
-#endif
-        print_status(1);
-        printf("System problem.\n");
-        printf("Error during command execution. Stop.\n");
-        return -2;
-    }
-
-    // extract real exit code (Linux requires WEXITSTATUS macro)
-#ifdef _WIN32
-    int return_code = _pclose(pipe);
-#else
-    int status = pclose(pipe);
-    if (status == -1) {
-        print_status(1);
-        printf("System problem.\n");
-        printf("Try to pclose. Failed. Stop.\n");
-        return -3;
-    }
-    int return_code = WEXITSTATUS(status);
-#endif
-
-    return return_code;
-}
-
 // ------------------------------
 // maker::executor_t implementation
 // ------------------------------
@@ -146,7 +95,7 @@ bool executor_t::execute_command(const std::string& command) {
 
 } // namespace maker
 
-int execute(const exec_t& args) {
+int execute(exec_t& args) {
     if (args.depth > 30) {
         print_status(1);
         printf("Too deep recursion. Stop.\n");
@@ -155,52 +104,45 @@ int execute(const exec_t& args) {
 
     auto executor = std::make_unique<maker::executor_t>(args.force_legacy);
 
-    for (const auto& item : args.task) {
-        bool is_direct_cmd = command_parser(item);
-        if (is_direct_cmd && !args.target.empty()) {
+    while(!args.list.empty()){
+        std::string cmd = args.list.front();
+        args.list.pop_front();
+
+        bool is_direct_cmd = command_parser(cmd);
+        if(is_direct_cmd){
             // execute command directly
             print_status(3);
-            printf("Executing command: %s\n",item.c_str());
-            bool success = executor->execute_command(item);
+            printf("Executing command: %s\n",cmd.c_str());
+            bool success = executor->execute_command(cmd);
             if (!success) {
                 print_status(1);
                 printf("Command execute failed. Stop.\n");
                 return 1;
             }
-        } else {
+        }else{
             // execute subtask
             constexpr size_t SUBTASK_PREFIX_LEN = 5;
-            if (item.size() < SUBTASK_PREFIX_LEN) {
+            if (cmd.size() < SUBTASK_PREFIX_LEN) {
                 print_status(1);
-                printf("Invalid subtask format: %s. Stop.\n", item.c_str());
+                printf("Invalid subtask format: %s. Stop.\n", cmd.c_str());
                 return 1;
             }
 
-            std::string sub_task_name = item.substr(SUBTASK_PREFIX_LEN);
+            std::string sub_task_name = cmd.substr(SUBTASK_PREFIX_LEN);
             print_status(3);
-            printf("Executing subtask: %s\n", sub_task_name.c_str());
-            
-            
-            std::vector<std::string> tmp;
+            printf("Explanding subtask: %s\n", sub_task_name.c_str());
+
+            std::deque<std::string> sub_list;
+
             try{
-                tmp = get_task(sub_task_name);
-            }catch(std::runtime_error& e){
+                sub_list = get_task(sub_task_name);
+            }catch(const std::runtime_error& e){
                 print_status(1);
                 printf("%s", e.what());
                 return 1;
             }
 
-            exec_t sub_args = {
-                .task=std::move(tmp),
-                .target=sub_task_name,
-                .depth=args.depth + 1,
-                .force_legacy=args.force_legacy
-            };
-
-            int res = execute(sub_args);
-            if (res != 0) {
-                return res;
-            }
+            args.list.insert(args.list.begin(),sub_list.begin(),sub_list.end());
         }
     }
 

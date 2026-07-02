@@ -3,6 +3,7 @@
 #include "get.h"
 
 #include <cstdlib>
+#include <deque>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -22,8 +23,6 @@ YAML::Node yml_paser(const std::string& file_name) {
 
     if (config.IsNull()) {
         throw std::runtime_error("Empty configuration file. Stop.\n");
-        print_status(1);
-        printf("Configuration file not found. Stop.\n");
         return {};
     }
 
@@ -48,13 +47,13 @@ bool command_parser(const std::string& command) {
     return true;
 }
 
-std::vector<std::string> get_task(const std::string& target) {
+std::deque<std::string> get_task(const std::string& target) {
     
     YAML::Node tasks = yml_paser(config_file_name);
     if (!tasks) {
         return {};
     }
-    std::vector<std::string> task;
+    std::deque<std::string> task;
 
     if (!tasks.IsMap()){
         throw std::runtime_error("Invalid tasks format in configuration file. Stop.\n");
@@ -65,7 +64,6 @@ std::vector<std::string> get_task(const std::string& target) {
     
     YAML::Node list = tasks[target];
 
-    task.reserve(list.size());
     for (size_t i = 0; i < list.size(); i++) {
         task.push_back(list[i].as<std::string>());
     }

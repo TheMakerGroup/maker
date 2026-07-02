@@ -2,11 +2,13 @@
 
 #include "root.hpp"
 #include "shell.hpp"
+#include <deque>
 #include <string>
 #include <vector>
 
 using exec_t = struct exec_args {
     const std::vector<std::string> task;
+    std::deque<std::string> list;
     const std::string target;
     int depth = 0;
     bool force_legacy = false;
