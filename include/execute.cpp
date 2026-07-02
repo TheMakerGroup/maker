@@ -146,9 +146,6 @@ bool executor_t::execute_command(const std::string& command) {
 
 } // namespace maker
 
-// ------------------------------
-// task execution entry
-// ------------------------------
 int execute(const exec_t& args) {
     if (args.depth > 30) {
         print_status(1);
