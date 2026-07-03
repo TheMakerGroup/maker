@@ -45,7 +45,7 @@ int main(const int argc, char** argv) {
 		return 1;
 	}
 
-    std::vector<std::string> list;
+    std::deque<std::string> list;
     try{
         list = get_task(result.make_target);
     }catch(std::runtime_error& e){
@@ -61,7 +61,7 @@ int main(const int argc, char** argv) {
     }
 
     if (const int res = execute(
-        {.task=list, .target=result.make_target,.depth=0,.force_legacy=result.force_legacy}
+        {.list=list, .target=result.make_target,.depth=0,.force_legacy=result.force_legacy}
     ); res == 0) {
 		print_status(3);
 		printf("All tasks executed successfully.\n");
