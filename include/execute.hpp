@@ -46,4 +46,4 @@ namespace maker {
 
 // global execution interfaces
 int execute_command(const std::string& command);
-int execute(const exec_t& args);
+int execute(exec_t& args);
