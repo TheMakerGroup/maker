@@ -6,7 +6,6 @@
 #include <deque>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <yaml-cpp/yaml.h>
 
 constexpr std::string config_file_name = "maker.yaml";

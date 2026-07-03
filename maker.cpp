@@ -60,9 +60,12 @@ int main(const int argc, char** argv) {
         return -1;
     }
 
-    if (const int res = execute(
-        {.list=list, .target=result.make_target,.depth=0,.force_legacy=result.force_legacy}
-    ); res == 0) {
+    exec_t args = {.list=list, 
+            .target=result.make_target,
+            .depth=0,
+            .force_legacy=result.force_legacy};
+
+    if (const int res = execute(args); res == 0) {
 		print_status(3);
 		printf("All tasks executed successfully.\n");
 	}else{
