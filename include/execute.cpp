@@ -116,7 +116,7 @@ int execute(exec_t& args) {
             bool success = executor->execute_command(cmd);
             if (!success) {
                 print_status(1);
-                printf("Command execute failed. Stop.\n");
+                printf("Executing command: %s failed. Stop.\n", cmd.c_str());
                 return 1;
             }
         }else{
