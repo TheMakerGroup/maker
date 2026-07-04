@@ -1,7 +1,7 @@
 ﻿#include <string>
 #include <iostream>
 
-const static std::string ver = "1.2";
+const static std::string ver = "1.3";
 
 void about() {
     printf("maker %s ",ver.c_str());
