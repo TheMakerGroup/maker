@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "analyze.hpp"
-#include "yaml-cpp/yaml.h"
 
 namespace maker::analyze{
 bool is_up_to_date(const std::string &source, const std::string &out){

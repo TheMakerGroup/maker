@@ -1,5 +1,5 @@
 #include "root.hpp"
-#include "yaml-cpp/node/node.h"
+#include <yaml-cpp/yaml.h>
 #include <string>
 #include <utility>
 #include <vector>

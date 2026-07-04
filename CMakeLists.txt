@@ -15,7 +15,8 @@ endif()
 project ("maker")
 
 include_directories(./include)
-link_directories(lib)
+include_directories(depends/yaml-cpp/include)
+include_directories(depends/tiny-process-library)
 
 set(YAML_CPP_BUILD_SHARED_LIBS OFF CACHE BOOL "Build yaml-cpp as static library" FORCE)
 

@@ -1,7 +1,7 @@
 #include "shell.hpp"
 #include "process.hpp"
+#include <array>
 #include <string>
-#include <vector>
 #include <thread>
 #include <chrono>
 #include <cstdio>
@@ -17,7 +17,7 @@ using namespace TinyProcessLib;
 using namespace std::chrono;
 
 // internal done marker, exit code follows right after it in the same line
-constexpr char DONE_MARKER[] = "__CMD_DONE_SIGNAL__";
+constexpr std::array<char, sizeof("__CMD_DONE_SIGNAL__")> DONE_MARKER = {"__CMD_DONE_SIGNAL__"};
 
 shell_t::~shell_t() {
     destroy();
@@ -48,7 +48,7 @@ bool shell_t::start() {
         auto stdout_cb = [this](const char* data, size_t size) {
             output_buffer_.append(data, size);
             const size_t marker_len = sizeof(DONE_MARKER) - 1;
-            size_t mark_pos = output_buffer_.find(DONE_MARKER);
+            size_t mark_pos = output_buffer_.find(DONE_MARKER.data());
 
             if (mark_pos == std::string::npos) {
                 // no complete marker: print safe part, keep tail bytes to handle split packet
@@ -134,7 +134,7 @@ void shell_t::destroy() {
 // public interfaces
 // ------------------------------
 shell_t* start_shell() {
-    shell_t* sh = new shell_t();
+    auto* sh = new shell_t();
     if (!sh->start()) {
         delete sh;
         return nullptr;
@@ -156,9 +156,9 @@ bool run_command(shell_t* sh, const std::string& command) {
     // Windows: use !errorlevel! (delayed expansion) to get real exit code of previous command
     std::string full_cmd;
 #ifdef _WIN32
-    full_cmd = command + " & echo " + std::string(DONE_MARKER) + " !errorlevel!";
+    full_cmd = command + " & echo " + std::string(DONE_MARKER.data()) + " !errorlevel!";
 #else
-    full_cmd = command + "; echo " + std::string(DONE_MARKER) + " $?";
+    full_cmd = command + "; echo " + std::string(DONE_MARKER.data()) + " $?";
 #endif
 
     sh->write(full_cmd);

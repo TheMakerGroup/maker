@@ -2,7 +2,6 @@
 #include <string>
 #include <mutex>
 #include <atomic>
-#include <functional>
 
 namespace TinyProcessLib {
     class Process;
@@ -21,11 +20,6 @@ private:
     std::mutex mtx_;
     int last_exit_code_ = -1;     // exit code of last executed command
 
-    // disable copy/move semantics to prevent double free
-    shell_t(const shell_t&) = delete;
-    shell_t& operator=(const shell_t&) = delete;
-    shell_t(shell_t&&) = delete;
-    shell_t& operator=(shell_t&&) = delete;
 
     shell_t() = default;
 
@@ -36,6 +30,12 @@ private:
     void destroy();
 
 public:
+    // disable copy/move semantics to prevent double free
+    shell_t(const shell_t&) = delete;
+    shell_t& operator=(const shell_t&) = delete;
+    shell_t(shell_t&&) = delete;
+    shell_t& operator=(shell_t&&) = delete;
+
     ~shell_t();
     bool is_valid();
 };
