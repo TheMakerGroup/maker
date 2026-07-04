@@ -121,7 +121,7 @@ int execute(exec_t& args) {
             }
         }else{
             // execute subtask
-            constexpr size_t SUBTASK_PREFIX_LEN = 5;
+            constexpr size_t SUBTASK_PREFIX_LEN = 6;
             if (cmd.size() < SUBTASK_PREFIX_LEN) {
                 print_status(1);
                 printf("Invalid subtask format: %s. Stop.\n", cmd.c_str());
