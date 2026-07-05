@@ -1,6 +1,5 @@
-﻿#include "get.h"
-#include "print.h"
-#include "get.h"
+﻿#include "get.hpp"
+#include "print.hpp"
 
 #include <cstdlib>
 #include <deque>
@@ -9,8 +8,8 @@
 #include <yaml-cpp/yaml.h>
 
 constexpr std::string config_file_name = "maker.yaml";
-
-YAML::Node yml_paser(const std::string& file_name) {
+namespace maker::get {
+void yml_paser(const std::string& file_name) {
 
     YAML::Node config;
 
@@ -22,7 +21,6 @@ YAML::Node yml_paser(const std::string& file_name) {
 
     if (config.IsNull()) {
         throw std::runtime_error("Empty configuration file. Stop.\n");
-        return {};
     }
 
     YAML::Node tasks = config["tasks"];
@@ -35,8 +33,7 @@ YAML::Node yml_paser(const std::string& file_name) {
         print_status(2);
         printf("No 'default' task found. Continuing execution.\n");
     }
-
-    return tasks;
+    root = tasks;
 }
 
 bool command_parser(const std::string& command) {
@@ -48,20 +45,19 @@ bool command_parser(const std::string& command) {
 
 std::deque<std::string> get_task(const std::string& target) {
     
-    YAML::Node tasks = yml_paser(config_file_name);
-    if (!tasks) {
+    if (!root) {
         return {};
     }
     std::deque<std::string> task;
 
-    if (!tasks.IsMap()){
+    if (!root.IsMap()){
         throw std::runtime_error("Invalid tasks format in configuration file. Stop.\n");
     }
-    if (tasks[target].IsNull()) {
+    if (root[target].IsNull()) {
         throw std::runtime_error("Unknown task. Stop.\n");
     }
     
-    YAML::Node list = tasks[target];
+    YAML::Node list = root[target];
 
     for (size_t i = 0; i < list.size(); i++) {
         task.push_back(list[i].as<std::string>());
@@ -171,4 +167,5 @@ arg_t parse_arguments(const int argc, char** argv) {
     }
 
     return result;
+}
 }

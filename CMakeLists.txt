@@ -26,7 +26,7 @@ add_subdirectory(depends/yaml-cpp)
 add_subdirectory(depends/tiny-process-library)
 
 add_executable (maker  maker.cpp
-        "include/print.h" "include/get.h"     "include/execute.hpp"
+        "include/print.hpp" "include/get.hpp"     "include/execute.hpp"
         "include/get.cpp" "include/print.cpp" "include/execute.cpp"
         "include/shell.hpp"  "include/shell.cpp" "include/root.hpp"
         "include/analyze.hpp" "include/analyze.cpp")

@@ -30,10 +30,13 @@ static const std::unordered_map<std::string, cmd> g_command_map = {
     {"--force-legacy", cmd::FORCE_LEGACY}
 };
 
+namespace maker::get {
+    void yml_paser(std::string& file_name);
+    bool command_parser(const std::string& command);
+    std::deque<std::string> get_task(const std::string& target);
+    std::string get_command(int argc, char**& argv);
+    std::string parse_arg(int argc, char** argv,int& status);
+    arg_t parse_arguments(const int argc, char** argv);
 
-YAML::Node yml_paser(std::string& file_name);
-bool command_parser(const std::string& command);
-std::deque<std::string> get_task(const std::string& target);
-std::string get_command(int argc, char**& argv);
-std::string parse_arg(int argc, char** argv,int& status);
-arg_t parse_arguments(const int argc, char** argv);
+    inline YAML::Node root;
+}
