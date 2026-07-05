@@ -8,7 +8,8 @@
 
 namespace maker::analyze{
 bool is_up_to_date(const std::string &source, const std::string &out){
-    std::filesystem::file_time_type source_time, out_time;
+    std::filesystem::file_time_type source_time;
+    std::filesystem::file_time_type out_time;
     try{
         source_time = std::filesystem::last_write_time(source);
         out_time = std::filesystem::last_write_time(out);
@@ -18,9 +19,9 @@ bool is_up_to_date(const std::string &source, const std::string &out){
 
     if(source_time > out_time){
         return false;
-    }else{
-        return true;
     }
+        return true;
+   
 
 }
 

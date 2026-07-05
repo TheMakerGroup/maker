@@ -1,10 +1,10 @@
 ﻿#include <string>
 #include <iostream>
 
-const static std::string ver = "1.3";
+constexpr std::string ver = "1.3";
 
 void about() {
-    printf("maker %s ",ver.c_str());
+    std::cout << "maker " << ver << "\n";
 std::cout << R"(Copyright (C) 2026  Gueder
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it

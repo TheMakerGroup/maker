@@ -1,62 +1,6 @@
-Checks: >
-  performance-*,
-  performance-unnecessary-copy-initialization,
-  performance-unnecessary-value-param,
-  performance-move-const-arg,
-  performance-move-constructor-init,
-  performance-for-range-copy,
-  performance-implicit-conversion-in-loop,
-  performance-inefficient-vector-operation,
-  performance-inefficient-string-concatenation,
-  performance-inefficient-algorithm,
-  performance-no-int-to-ptr,
-  performance-no-automatic-move,
-  performance-trivially-copyable-dtor,
-  readability-const-return-type,
-  readability-static-accessed-through-instance,
-  cppcoreguidelines-avoid-non-const-global-variables,
-  cppcoreguidelines-const-correctness,
-  bugprone-*,
-  bugprone-use-after-move,
-  bugprone-dangling-handle,
-  bugprone-redundant-branch-condition,
-  bugprone-redundant-control-flow,
-  bugprone-unused-return-value,
-  modernize-*,
-  modernize-use-auto,
-  modernize-use-constexpr,
-  modernize-use-nodiscard,
-  modernize-use-noexcept,
-  modernize-use-emplace,
-  modernize-use-override,
-  modernize-use-default-member-init,
-  modernize-use-nullptr,
-  modernize-use-std-format,
-  cppcoreguidelines-prefer-member-initializer,
-  performance-noexcept-move-constructor,
-  -llvm-*,
-  -google-*,
-  -fuchsia-*,
-  -misc-*,
-  -readability-braces-around-statements,
-  -readability-named-parameter,
-  -readability-length-substring,
-  -cppcoreguidelines-special-member-functions,
-  -cppcoreguidelines-avoid-magic-numbers,
-  -modernize-avoid-bind,
-  -modernize-require-trailingslash,
-  -modernize-use-trailing-return-type,
-  -readability-redundant-string-init
-
-CheckOptions:
-  performance-unnecessary-value-param.AllowedTypes: ''
-  performance-for-range-copy.WarnOnAllAutoCopies: true
-  performance-inefficient-vector-operation.AllowReserve: true
-  performance-inefficient-string-concatenation.Strict: true
-  modernize-use-constexpr.Strict: true
-  modernize-use-constexpr.AllowVoidFunctions: true
-  modernize-use-emplace.PreferEmplaceForAll: true
-  cppcoreguidelines-const-correctness.Strict: true
-  bugprone-unused-return-value.CheckAllFunctions: true
+Checks: '*'
+Checks: '-llvmlibc-callee-namespace'
 
 WarningsAsErrors: 'performance-*'
+HeaderFilterRegex: '.*'
+FormatStyle: file
