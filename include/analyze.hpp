@@ -9,4 +9,6 @@ namespace maker::analyze {
 
     std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& task);
     bool need_execute(const std::string& task_name, const YAML::Node& root);
+
+    inline YAML::Node root;
 }

@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <yaml-cpp/yaml.h>
+#include "analyze.hpp"
 
 constexpr std::string config_file_name = "maker.yaml";
 
@@ -35,7 +36,7 @@ YAML::Node yml_paser(const std::string& file_name) {
         print_status(2);
         printf("No 'default' task found. Continuing execution.\n");
     }
-
+    maker::analyze::root = tasks;
     return tasks;
 }
 

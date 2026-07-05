@@ -45,7 +45,7 @@ std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& 
     return in_out;
 }
 
-bool need_execute(const std::string &task_name, const YAML::Node& root){
+bool need_execute(const std::string &task_name){
     std::vector<std::pair<std::string, std::string>> in_out;
     in_out = get_paramers(root[task_name]);
 
