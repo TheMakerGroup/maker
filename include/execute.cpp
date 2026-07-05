@@ -1,6 +1,6 @@
 ﻿#include "execute.hpp"
-#include "get.hpp"
-#include "print.hpp"
+#include "get.h"
+#include "print.h"
 #include "shell.hpp"
 #include <array>
 #include <cstdio>
@@ -96,23 +96,19 @@ bool executor_t::execute_command(const std::string& command) {
 } // namespace maker
 
 int execute(exec_t& args) {
-
-    int depth = 0;
+    if (args.depth > 30) {
+        print_status(1);
+        printf("Too deep recursion. Stop.\n");
+        return -4;
+    }
 
     auto executor = std::make_unique<maker::executor_t>(args.force_legacy);
 
     while(!args.list.empty()){
-
-        if (depth > 30) {
-            print_status(1);
-            printf("Too deep recursion. Stop.\n");
-            return 1;
-        }
-        
         std::string cmd = args.list.front();
         args.list.pop_front();
 
-        bool is_direct_cmd = maker::get::command_parser(cmd);
+        bool is_direct_cmd = command_parser(cmd);
         if(is_direct_cmd){
             // execute command directly
             print_status(3);
@@ -139,7 +135,7 @@ int execute(exec_t& args) {
             std::deque<std::string> sub_list;
 
             try{
-                sub_list = maker::get::get_task(sub_task_name);
+                sub_list = get_task(sub_task_name);
             }catch(const std::runtime_error& e){
                 print_status(1);
                 printf("%s", e.what());
@@ -147,7 +143,6 @@ int execute(exec_t& args) {
             }
 
             args.list.insert(args.list.begin(),sub_list.begin(),sub_list.end());
-            depth++;
         }
     }
 

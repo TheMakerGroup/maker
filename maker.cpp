@@ -12,8 +12,8 @@ Note:
 */
 
 
-#include "include/get.hpp"
-#include "include/print.hpp"
+#include "include/get.h"
+#include "include/print.h"
 #include "include/execute.hpp"
 #include <stdexcept>
 #ifdef _WIN32
@@ -31,7 +31,7 @@ int main(const int argc, char** argv) {
 
 
     //const std::string target = parse_arg(argc,argv,status);
-    const arg_t result = maker::get::parse_arguments(argc, argv);
+    const arg_t result = parse_arguments(argc, argv);
 
     if(result.is_err){
         return 1;
@@ -47,7 +47,7 @@ int main(const int argc, char** argv) {
 
     std::deque<std::string> list;
     try{
-        list = maker::get::get_task(result.make_target);
+        list = get_task(result.make_target);
     }catch(std::runtime_error& e){
         print_status(1);
         printf("%s", e.what());
@@ -57,11 +57,12 @@ int main(const int argc, char** argv) {
     if (list.empty()) {
         print_status(1);
         printf("Unknown task: %s\n", result.make_target.c_str());
-        return 1;
+        return -1;
     }
 
     exec_t args = {.list=list, 
             .target=result.make_target,
+            .depth=0,
             .force_legacy=result.force_legacy};
 
     if (const int res = execute(args); res == 0) {

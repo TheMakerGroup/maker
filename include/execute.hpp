@@ -8,6 +8,7 @@
 using exec_t = struct exec_args {
     std::deque<std::string> list;
     const std::string target;
+    int depth = 0;
     bool force_legacy = false;
 };
 

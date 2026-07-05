@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "analyze.hpp"
-#include "get.hpp"
 
 namespace maker::analyze{
 bool is_up_to_date(const std::string &source, const std::string &out){
@@ -46,10 +45,9 @@ std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& 
     return in_out;
 }
 
-bool need_execute(const std::string &task_name){
-    
+bool need_execute(const std::string &task_name, const YAML::Node& root){
     std::vector<std::pair<std::string, std::string>> in_out;
-    in_out = get_paramers(get::root[task_name]);
+    in_out = get_paramers(root[task_name]);
 
     for(const auto& item : in_out){
         if(!is_up_to_date(item.first, item.second)){
