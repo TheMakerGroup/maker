@@ -1,6 +1,6 @@
 [submodule "depends/tiny-process-library"]
 	path = depends/tiny-process-library
-	url = https://gitlab.com/eidheim/tiny-process-library.git
+	url = git@github.com:TheMakerGroup/tiny-process-library.git
 [submodule "depends/yaml-cpp"]
 	path = depends/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
+	url = git@github.com:TheMakerGroup/yaml-cpp.git
