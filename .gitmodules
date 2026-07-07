@@ -3,4 +3,4 @@
 	url = https://gitlab.com/eidheim/tiny-process-library.git
 [submodule "depends/yaml-cpp"]
 	path = depends/yaml-cpp
-	url = https://gh.bugdey.us.kg/https://github.com/jbeder/yaml-cpp.git
+	url = https://github.com/jbeder/yaml-cpp.git
