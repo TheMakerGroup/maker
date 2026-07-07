@@ -47,7 +47,7 @@ int main(const int argc, char** argv) {
 
     std::deque<std::string> list;
     try{
-        list = get_task(result.make_target);
+        list = get_task_new(result.make_target);
     }catch(std::runtime_error& e){
         print_status(1);
         printf("%s", e.what());

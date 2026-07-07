@@ -2,6 +2,7 @@
 #include "get.h"
 #include "print.h"
 #include "shell.hpp"
+#include "analyze.hpp"
 #include <array>
 #include <cstdio>
 #include <stdexcept>
@@ -11,6 +12,8 @@
 #else
 #include <sys/wait.h>
 #endif
+
+constexpr size_t SUBTASK_PREFIX_LEN = 6;
 
 // ------------------------------
 // maker::executor_t implementation
@@ -101,6 +104,17 @@ int execute(exec_t& args) {
         printf("Too deep recursion. Stop.\n");
         return -4;
     }
+    try{
+        if(!maker::analyze::need_execute(args.target)){
+            print_status(3);
+            printf("Task %s is up-to-date. Skip.\n", args.target.c_str());
+            return 0;
+        }
+    }catch(const std::runtime_error& e){ // catch not legacy exception
+        print_status(1);
+        printf("%s", e.what());
+        return 1;
+    }
 
     auto executor = std::make_unique<maker::executor_t>(args.force_legacy);
 
@@ -121,7 +135,6 @@ int execute(exec_t& args) {
             }
         }else{
             // execute subtask
-            constexpr size_t SUBTASK_PREFIX_LEN = 6;
             if (cmd.size() < SUBTASK_PREFIX_LEN) {
                 print_status(1);
                 printf("Invalid subtask format: %s. Stop.\n", cmd.c_str());
@@ -135,7 +148,7 @@ int execute(exec_t& args) {
             std::deque<std::string> sub_list;
 
             try{
-                sub_list = get_task(sub_task_name);
+                sub_list = get_task_new(sub_task_name);
             }catch(const std::runtime_error& e){
                 print_status(1);
                 printf("%s", e.what());

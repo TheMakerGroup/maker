@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstring>
 #include <filesystem>
 #include <stdexcept>
 #include <utility>
@@ -28,6 +29,9 @@ bool is_up_to_date(const std::string &source, const std::string &out){
 std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& task){
     auto input = task["input"];
     auto output = task["output"];
+    if(!input || !output){
+        throw std::runtime_error("legacy");
+    }
     if(!input.IsSequence() || !output.IsSequence()){
         throw std::runtime_error("Unrecognized input or output format. Stop.\n");
     }
@@ -47,7 +51,15 @@ std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& 
 
 bool need_execute(const std::string &task_name){
     std::vector<std::pair<std::string, std::string>> in_out;
-    in_out = get_paramers(root[task_name]);
+    try{
+        in_out = get_paramers(root[task_name]);
+    }catch(const std::runtime_error& e){
+        if(std::string_view(e.what()) == std::string_view("legacy")){
+            return true;
+        }else{
+            throw; // pass the exception up
+        }
+    }
 
     for(const auto& item : in_out){
         if(!is_up_to_date(item.first, item.second)){

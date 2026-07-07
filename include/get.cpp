@@ -55,9 +55,6 @@ std::deque<std::string> get_task(const std::string& target) {
     }
     std::deque<std::string> task;
 
-    if (!tasks.IsMap()){
-        throw std::runtime_error("Invalid tasks format in configuration file. Stop.\n");
-    }
     if (tasks[target].IsNull()) {
         throw std::runtime_error("Unknown task. Stop.\n");
     }
@@ -68,6 +65,29 @@ std::deque<std::string> get_task(const std::string& target) {
         task.push_back(list[i].as<std::string>());
     }
     return task;
+}
+
+std::deque<std::string> get_task_new(const std::string& target) {
+    YAML::Node tasks = yml_paser(config_file_name);
+    if(!tasks){
+        throw std::runtime_error("Empty configuration file. Stop.\n");
+    }
+    
+    if (!tasks.IsMap()){
+        throw std::runtime_error("Invalid tasks format in configuration file. Stop.\n");
+    }
+
+    YAML::Node task = tasks[target];
+    std::deque<std::string> list;
+
+    if (!task["cmd"]) {
+        list = get_task(target); // keep compatibility to old version
+        return list;
+    }
+    for (size_t i = 0; i < task["cmd"].size(); i++) {
+        list.push_back(task["cmd"][i].as<std::string>());
+    }
+    return list;
 }
 
 std::string get_command(const int argc, char**& argv) {
