@@ -1,18 +1,12 @@
 ﻿cmake_minimum_required (VERSION 3.15)
 
-
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+if(MINGW)
+message(FATAL_ERROR "MINGW is not supported")
 endif()
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-add_compile_options(-O2 -Wall -Wextra -pedantic -Werror)
-elseif(MSVC)
-add_compile_options(/O2 /W4 /WX)
-endif()
-
 project ("maker")
+
+# 全局移除动态CRT，强制静态
+
 
 include_directories(./include)
 include_directories(depends/yaml-cpp/include)
@@ -40,21 +34,10 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET maker PROPERTY CXX_STANDARD 20)
   set_property(TARGET maker PROPERTY CXX_STANDARD_REQUIRED ON)
 endif()
-
-
-
-if(MSVC)
-  set(FLAGS_VARS
-    CMAKE_C_FLAGS
-    CMAKE_C_FLAGS_DEBUG
-    CMAKE_C_FLAGS_RELEASE
-    CMAKE_CXX_FLAGS
-    CMAKE_CXX_FLAGS_DEBUG
-    CMAKE_CXX_FLAGS_RELEASE
-  )
-  foreach(var ${FLAGS_VARS})
-    string(REPLACE "/MD" "/MT" ${var} "${${var}}")
-    string(REPLACE "/MDd" "/MTd" ${var} "${${var}}")
-    string(REPLACE "/W3" "/W4" ${var} "${${var}}")
-  endforeach()
+cmake_policy(SET CMP0091 NEW)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+add_compile_options(-O2 -Wall -Wextra -pedantic -Werror)
+endif()
+if(WIN32)
+add_compile_options(/O2 /W4 /WX)
 endif()
