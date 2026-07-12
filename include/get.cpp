@@ -8,9 +8,24 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include "analyze.hpp"
+#include "root.hpp"
 
 constexpr std::string config_file_name = "maker.yaml";
 
+namespace maker::get {
+void set_yaml_node(){
+    YAML::Node root;
+    try{
+        root = YAML::LoadFile(config_file_name);
+    }catch (const YAML::BadFile&) {
+        throw std::runtime_error("Can't load configuration file. Stop.\n");
+    }
+    if(!root || !root["tasks"]){
+        throw std::runtime_error("Empty configuration file. Stop.\n");
+    }
+    maker::root = root;
+}
+}
 YAML::Node yml_paser(const std::string& file_name) {
 
     YAML::Node config;
@@ -36,7 +51,7 @@ YAML::Node yml_paser(const std::string& file_name) {
         print_status(2);
         printf("No 'default' task found. Continuing execution.\n");
     }
-    maker::analyze::root = tasks;
+    maker::root = tasks;
     return tasks;
 }
 

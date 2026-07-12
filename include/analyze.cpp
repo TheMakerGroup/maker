@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "analyze.hpp"
+#include "root.hpp"
 
 namespace maker::analyze{
 bool is_up_to_date(const std::string &source, const std::string &out){
@@ -21,9 +22,7 @@ bool is_up_to_date(const std::string &source, const std::string &out){
     if(source_time > out_time){
         return false;
     }
-        return true;
-   
-
+    return true;
 }
 
 std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& task){
@@ -52,7 +51,7 @@ std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& 
 bool need_execute(const std::string &task_name){
     std::vector<std::pair<std::string, std::string>> in_out;
     try{
-        in_out = get_paramers(root[task_name]);
+        in_out = get_paramers(maker::root[task_name]);
     }catch(const std::runtime_error& e){
         if(std::string_view(e.what()) == std::string_view("legacy")){
             return true;
@@ -67,5 +66,17 @@ bool need_execute(const std::string &task_name){
         }
     }
     return false;
+}
+
+std::queue<std::string> get_deps(const YAML::Node& task){
+    auto deps = task["deps"];
+    if(!deps || !deps.IsSequence()){
+        throw std::runtime_error("Unrecognized deps format. Stop.\n");
+    }
+    std::queue<std::string> dep_queue;
+    for(const auto& item : deps){
+        dep_queue.push(item.as<std::string>());
+    }
+    return dep_queue;
 }
 }

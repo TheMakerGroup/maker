@@ -20,7 +20,7 @@
   
   
   default:
-    depend: [build] #Note: avoid using "tasks." here.
+    deps: [build] #Note: avoid using "tasks." here.
     input: []
     output: []
     cmd:
