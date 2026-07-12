@@ -68,9 +68,13 @@ bool need_execute(const std::string &task_name){
     return false;
 }
 
-std::queue<std::string> get_deps(const YAML::Node& task){
+std::queue<std::string> get_deps(const std::string& task_name){
+    auto task = maker::root[task_name];
     auto deps = task["deps"];
-    if(!deps || !deps.IsSequence()){
+    if(!deps){
+        throw std::runtime_error("legacy");
+    }
+    if(!deps.IsSequence()){
         throw std::runtime_error("Unrecognized deps format. Stop.\n");
     }
     std::queue<std::string> dep_queue;

@@ -9,5 +9,5 @@ namespace maker::analyze {
 
     std::vector<std::pair<std::string, std::string>> get_paramers(const YAML::Node& task);
     bool need_execute(const std::string& task_name);
-    std::queue<std::string> get_deps(const YAML::Node& task);
+    std::queue<std::string> get_deps(const std::string& task_name);
 }

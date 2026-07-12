@@ -102,8 +102,36 @@ int execute(exec_t& args) {
     if (args.depth > 30) {
         print_status(1);
         printf("Too deep recursion. Stop.\n");
-        return -4;
+        return 1;
     }
+
+    std::queue<std::string> deps;
+    try{
+        deps = maker::analyze::get_deps(args.target);
+    }catch(const std::runtime_error& e){
+        std::string err_msg = e.what();
+        if(err_msg != "legacy"){
+            print_status(1);
+            printf("%s", e.what());
+            return 1;
+        }
+    }
+    // process dependences first
+    while(!deps.empty()){
+        auto task = deps.front();
+        deps.pop();
+        exec_t arg = {.list = get_task_new(task),
+                            .target = task,
+                            .depth = args.depth + 1,
+                            .force_legacy = args.force_legacy};
+        print_status(3);
+        printf("Executing dependency task: %s\n",task.c_str());
+        auto ret = execute(arg);
+        if(ret != 0){
+            return 1;
+        }
+    }
+
     try{
         if(!maker::analyze::need_execute(args.target)){
             print_status(3);
@@ -142,6 +170,34 @@ int execute(exec_t& args) {
             }
 
             std::string sub_task_name = cmd.substr(SUBTASK_PREFIX_LEN);
+
+            std::queue<std::string> deps;
+            try{
+                deps = maker::analyze::get_deps(sub_task_name);
+            }catch(const std::runtime_error& e){
+                std::string err_msg = e.what();
+                if(err_msg != "legacy"){
+                    print_status(1);
+                    printf("%s", e.what());
+                    return 1;
+                }
+            }
+            // process dependences first
+            while(!deps.empty()){
+                auto task = deps.front();
+                deps.pop();
+                exec_t arg = {.list = get_task_new(task),
+                            .target = task,
+                            .depth = args.depth + 1,
+                            .force_legacy = args.force_legacy};
+                print_status(3);
+                printf("Executing dependency of subtask: %s\n",task.c_str());
+                auto ret = execute(arg);
+                if(ret != 0){
+                    return 1;
+                }   
+            }
+
             print_status(3);
             printf("Explanding subtask: %s\n", sub_task_name.c_str());
 
