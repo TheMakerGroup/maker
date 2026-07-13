@@ -1,12 +1,13 @@
 ﻿cmake_minimum_required (VERSION 3.15)
 
-if(MINGW)
-message(FATAL_ERROR "MINGW is not supported")
+if(MINGW OR MSYS OR CYGWIN)
+message(FATAL_ERROR "MINGW or MSYS or CYGWIN is not supported")
 endif()
 project ("maker")
 
-# 全局移除动态CRT，强制静态
-
+if(WIN32)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "")
+endif()
 
 include_directories(./include)
 include_directories(depends/yaml-cpp/include)
@@ -36,8 +37,13 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 cmake_policy(SET CMP0091 NEW)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-add_compile_options(-O2 -Wall -Wextra -pedantic -Werror)
+if(UNIX)
+set_target_properties(maker PROPERTIES COMPILE_FLAGS "-O2 -Wall -Wextra -pedantic -Werror")
+set_target_properties(maker PROPERTIES LINK_FLAGS "-Wl,--gc-sections -Wl,--strip-all")
+endif()
 endif()
 if(WIN32)
-add_compile_options(/O2 /W4 /WX)
+string(APPEND CMAKE_CXX_FLAGS " /GR- /W4 /WX -flto")
+set(CMAKE_CXXFLAGS "${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
+string(APPEND CMAKE_EXE_LINKER_FLAGS " /OPT:REF /OPT:ICF /DEBUG:NONE /RELEASE")
 endif()
