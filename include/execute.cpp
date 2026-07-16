@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 #ifdef _WIN32
 #else
@@ -99,7 +100,11 @@ bool executor_t::execute_command(const std::string& command) {
 } // namespace maker
 
 int execute(exec_t& args) {
-    if (args.depth > 30) {
+
+    auto&[list, target, depth, force_legacy] = args;
+    // use struct binding to keep the code readable
+
+    if (depth > 30) {
         print_status(1);
         printf("Too deep recursion. Stop.\n");
         return 1;
@@ -107,7 +112,7 @@ int execute(exec_t& args) {
 
     std::queue<std::string> deps;
     try{
-        deps = maker::analyze::get_deps(args.target);
+        deps = maker::analyze::get_deps(target);
     }catch(const std::runtime_error& e){
         std::string err_msg = e.what();
         if(err_msg != "legacy"){
@@ -122,8 +127,8 @@ int execute(exec_t& args) {
         deps.pop();
         exec_t arg = {.list = get_task_new(task),
                             .target = task,
-                            .depth = args.depth + 1,
-                            .force_legacy = args.force_legacy};
+                            .depth = depth + 1,
+                            .force_legacy = force_legacy};
         print_status(3);
         printf("Executing dependency task: %s\n",task.c_str());
         auto ret = execute(arg);
@@ -133,9 +138,9 @@ int execute(exec_t& args) {
     }
 
     try{
-        if(!maker::analyze::need_execute(args.target)){
+        if(!maker::analyze::need_execute(target)){
             print_status(3);
-            printf("Task %s is up-to-date. Skip.\n", args.target.c_str());
+            printf("Task %s is up-to-date. Skip.\n", target.c_str());
             return 0;
         }
     }catch(const std::runtime_error& e){ // catch not legacy exception
@@ -144,13 +149,13 @@ int execute(exec_t& args) {
         return 1;
     }
 
-    auto executor = std::make_unique<maker::executor_t>(args.force_legacy);
+    auto executor = std::make_unique<maker::executor_t>(force_legacy);
 
-    while(!args.list.empty()){
-        std::string cmd = args.list.front();
-        args.list.pop_front();
+    while(!list.empty()){
+        std::string cmd = list.front();
+        list.pop_front();
 
-        bool is_direct_cmd = command_parser(cmd);
+        bool is_direct_cmd = judge_command(cmd);
         if(is_direct_cmd){
             // execute command directly
             print_status(3);
@@ -175,21 +180,20 @@ int execute(exec_t& args) {
             try{
                 deps = maker::analyze::get_deps(sub_task_name);
             }catch(const std::runtime_error& e){
-                std::string err_msg = e.what();
-                if(err_msg != "legacy"){
+                if(std::string_view(e.what()) != "legacy"){
                     print_status(1);
                     printf("%s", e.what());
                     return 1;
-                }
+                } // ignore legacy message
             }
-            // process dependences first
-            while(!deps.empty()){
+            // process subtask dependences first
+            while(!deps.empty()){ // note: for legacy, here will skip
                 auto task = deps.front();
                 deps.pop();
                 exec_t arg = {.list = get_task_new(task),
                             .target = task,
-                            .depth = args.depth + 1,
-                            .force_legacy = args.force_legacy};
+                            .depth = depth + 1,
+                            .force_legacy = force_legacy};
                 print_status(3);
                 printf("Executing dependency of subtask: %s\n",task.c_str());
                 auto ret = execute(arg);
@@ -211,7 +215,7 @@ int execute(exec_t& args) {
                 return 1;
             }
 
-            args.list.insert(args.list.begin(),sub_list.begin(),sub_list.end());
+            list.insert(list.begin(),sub_list.begin(),sub_list.end());
         }
     }
 

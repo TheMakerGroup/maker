@@ -17,8 +17,6 @@ enum class cmd : uint8_t {
 
 using arg_t = struct parse_result {
     std::string make_target;
-    bool should_exit;
-    bool is_err;
     cmd command;
     bool force_legacy;
 };
@@ -31,9 +29,9 @@ static const std::unordered_map<std::string, cmd> g_command_map = {
 };
 
 
-YAML::Node yml_paser(std::string& file_name);
-bool command_parser(const std::string& command);
+void yml_paser(); // jump to maker::get::set_yaml_node()
+bool judge_command(const std::string& command);
 std::deque<std::string> get_task_new(const std::string& target);
 std::string get_command(int argc, char**& argv);
 std::string parse_arg(int argc, char** argv,int& status);
-arg_t parse_arguments(const int argc, char** argv);
+arg_t parse_arguments(const int argc, char* argv[]);

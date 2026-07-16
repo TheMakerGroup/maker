@@ -15,12 +15,21 @@ Note:
 #include "include/get.h"
 #include "include/print.h"
 #include "include/execute.hpp"
+#include "include/root.hpp"
 #include <stdexcept>
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 int main(const int argc, char** argv) {
+
+    try{
+        yml_paser();
+    }catch(const std::runtime_error& e){
+        print_status(1);
+        printf("%s", e.what());
+        return 1;
+    }
 
 #ifdef _WIN32 //Enable ANSI Output
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -33,11 +42,12 @@ int main(const int argc, char** argv) {
     //const std::string target = parse_arg(argc,argv,status);
     const arg_t result = parse_arguments(argc, argv);
 
-    if(result.is_err){
+    
+    if(maker::init_cfg::is_err){
         return 1;
     }
 
-    if(result.should_exit){
+    if(maker::init_cfg::should_exit){
         return 0;
     }
 

@@ -53,7 +53,7 @@ bool need_execute(const std::string &task_name){
     try{
         in_out = get_paramers(maker::root[task_name]);
     }catch(const std::runtime_error& e){
-        if(std::string_view(e.what()) == std::string_view("legacy")){
+        if(std::string_view(e.what()) == "legacy"){
             return true;
         }else{
             throw; // pass the exception up

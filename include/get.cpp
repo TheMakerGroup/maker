@@ -21,41 +21,19 @@ void set_yaml_node(){
         throw std::runtime_error("Can't load configuration file. Stop.\n");
     }
     if(!root || !root["tasks"]){
+        throw std::runtime_error("Invalid node. Stop.\n");
+    }
+    if(root.IsNull()){
         throw std::runtime_error("Empty configuration file. Stop.\n");
     }
-    maker::root = root;
+    maker::root = root["tasks"];
 }
 }
-YAML::Node yml_paser(const std::string& file_name) {
-
-    YAML::Node config;
-
-    try {
-        config = YAML::LoadFile(file_name);
-    }catch (const YAML::BadFile&) {
-        throw std::runtime_error("Can't load configuration file. Stop.\n");
-    }
-
-    if (config.IsNull()) {
-        throw std::runtime_error("Empty configuration file. Stop.\n");
-        return {};
-    }
-
-    YAML::Node tasks = config["tasks"];
-    if (!tasks) {
-        throw std::runtime_error("'tasks' key not found in configuration file. Stop.\n");
-    }
-
-    // Check if default in tasks
-    if (!tasks["default"]) {
-        print_status(2);
-        printf("No 'default' task found. Continuing execution.\n");
-    }
-    maker::root = tasks;
-    return tasks;
+void yml_paser() {
+    maker::get::set_yaml_node(); // jump to new function
 }
 
-bool command_parser(const std::string& command) {
+bool judge_command(const std::string& command) {
     if (command.find("tasks.") != std::string::npos) {
         return false;
     }
@@ -64,10 +42,10 @@ bool command_parser(const std::string& command) {
 
 std::deque<std::string> get_task(const std::string& target) {
     
-    YAML::Node tasks = yml_paser(config_file_name);
-    if (!tasks) {
-        return {};
-    }
+    YAML::Node tasks = maker::root;
+
+    // here remove judge code beacuse tasks won't be invalid
+
     std::deque<std::string> task;
 
     if (tasks[target].IsNull()) {
@@ -83,7 +61,7 @@ std::deque<std::string> get_task(const std::string& target) {
 }
 
 std::deque<std::string> get_task_new(const std::string& target) {
-    YAML::Node tasks = yml_paser(config_file_name);
+    YAML::Node tasks = maker::root;
     if(!tasks){
         throw std::runtime_error("Empty configuration file. Stop.\n");
     }
@@ -96,8 +74,7 @@ std::deque<std::string> get_task_new(const std::string& target) {
     std::deque<std::string> list;
 
     if (!task["cmd"]) {
-        list = get_task(target); // keep compatibility to old version
-        return list;
+        return get_task(target); // keep compatibility to old version
     }
     for (size_t i = 0; i < task["cmd"].size(); i++) {
         list.push_back(task["cmd"][i].as<std::string>());
@@ -114,11 +91,10 @@ std::string get_command(const int argc, char**& argv) {
     return command;
 }
 
-arg_t parse_arguments(const int argc, char** argv) {
+arg_t parse_arguments(const int argc, char* argv[]) {
     arg_t result{};
     // Initialize all fields with explicit default values
     result.make_target = "";
-    result.should_exit = false;
     result.command = cmd::NO_COMMAND;
     result.force_legacy = false;
 
@@ -126,8 +102,7 @@ arg_t parse_arguments(const int argc, char** argv) {
     if (argc == 1) {
         print_status(1);
         printf("No action input. Stop.\n");
-        result.should_exit = true;
-        result.is_err = true;
+        maker::init_cfg::is_err = true;
         return result;
     }
 
@@ -141,8 +116,7 @@ arg_t parse_arguments(const int argc, char** argv) {
         if (cmd_iterator == g_command_map.end()) {
             print_status(1);
             printf("Invalid argument: %s\n", current_arg.c_str());
-            result.should_exit = true;
-            result.is_err = true;
+            maker::init_cfg::is_err = true;
             return result;
         }
 
@@ -151,12 +125,12 @@ arg_t parse_arguments(const int argc, char** argv) {
             // Immediate-exit commands: highest priority, execute and return directly
             case cmd::HELP:
                 usage();
-                result.should_exit = true;
+                maker::init_cfg::should_exit = true;
                 return result;
 
             case cmd::VERSION:
                 about();
-                result.should_exit = true;
+                maker::init_cfg::should_exit = true;
                 return result;
 
             // Flag-type option: no follow-up parameter, set flag and increment index
@@ -203,7 +177,7 @@ arg_t parse_arguments(const int argc, char** argv) {
     if (result.command == cmd::NO_COMMAND) {
         print_status(1);
         printf("No valid command specified. Stop.\n");
-        result.should_exit = true;
+        maker::init_cfg::is_err = true;
     }
 
     return result;
