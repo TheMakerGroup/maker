@@ -1,29 +1,27 @@
 ﻿<div align="center">
 <font size="6">
-The maker tool
+<b>
+The Maker Tool
+</b>
 </font>
 </div>
 
+<font size="4">A YAML‑based build automation tool.</font>
 
-<font size="4">This is a tool to build by yaml.</font> 
+> [!WARNING]
+> This project is currently undergoing refactoring. Although backward compatibility is maintained, **please exercise caution** when using it.
 
->[!WARNING]
-> This project is under refactoring. Although with backward compatibility,
- BE ATTENTION when using it.
+---
 
-# How to use?
+## How to Use
 
-First, open your cmd/powershell(Windows) or bash/sh(Linux) shell.
+1. Open your terminal – `cmd` or PowerShell on Windows, `bash`/`sh` on Linux.
+2. Navigate to your source code directory.
+3. Invoke the maker binary.
+4. Specify the desired **action**.
+5. Optionally, provide a **task name** (some actions do not require this step).
 
-Then, enter your source code folder.
-
-Then, input the maker's binary file name.
-
-Add the action.
-
-Finally, input the task.(Some actions needn't this step.)
-
-Example:
+**Example:**
 
 ```cmd
 maker.exe make default
@@ -32,26 +30,37 @@ maker.exe make default
 maker make default
 ```
 
-About how to write the config file, you can see [syntax guide](syntax-guide.md).
+For details on writing the configuration file, refer to the [syntax guide](syntax-guide.md).
 
-Actions:
+---
 
--    make:         Make the project following the task in maker.yaml.
+## Actions
 
--    help:         Show this help.
+| Action    | Description |
+|-----------|-------------|
+| `make`    | Build the project according to the tasks defined in `maker.yaml`. |
+| `help`    | Display this help message. |
+| `version` | Show version information. |
 
--    version:      Show version info.
+---
 
-Option(s):
+## Options
 
--    --force-legacy:      Using legacy mode to execute command.
+| Option                  | Description |
+|-------------------------|-------------|
+| `--force-legacy`        | Execute commands using the legacy mode. |
 
+---
 
+## Third‑Party Licenses
 
-## Third-Party Licenses  
-- **[yaml-cpp]**: MIT License (Copyright 2025 jbeder) 
-Source code at https://github.com/jbeder/yaml-cpp
+- **[yaml-cpp]** – MIT License (Copyright 2026 jbeder)  
+  Source code: https://github.com/jbeder/yaml-cpp
 
-This project is published as GNU GPL v3 or later.
-MIT license, see LICENSE-MIT,  
-GNU GPL v3 license, see LICENSE.
+---
+
+## License
+
+This project is published under the **GNU GPL v3 or later**.  
+For alternative licensing terms (MIT), please see the `LICENSE-MIT` file.  
+The full GNU GPL v3 license is available in the `LICENSE` file.
