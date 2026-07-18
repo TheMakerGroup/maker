@@ -1,0 +1,119 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag'
+        required: true
+        type: string
+      is_test_mode:
+        description: 'Is test version'
+        required: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os == 'linux' && 'ubuntu-24.04' || ( matrix.os == 'macos' && 'macos-15' || 'windows-2022' ) }}
+    strategy:
+      matrix:
+        os: [windows, linux, macos]
+    name: Build_${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          ref: ${{ github.event_name != 'workflow_dispatch' && github.ref || github.event.inputs.release_tag }}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.14
+        with:
+          cmake-version: '3.28.x'
+
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential zip
+
+      - name: Install build tools (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake zip
+
+      - name: Configure CMake
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=./install
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Install
+        run: cmake --install build --prefix ./install
+
+      - name: Package (ZIP)
+        shell: pwsh
+        run: |
+          $version = "${{ github.event.inputs.release_tag }}"
+          if (-not $version) { $version = "0.0.0" }
+          $osName = "${{ matrix.os }}"
+          New-Item -ItemType Directory -Force -Path out | Out-Null
+          Compress-Archive -Path ./install/* -DestinationPath "out/maker-$version-$osName.zip"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}
+          path: out/*.zip
+
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.release_tag && github.event_name != 'pull_request' }}
+    needs: build
+    environment:
+      name: ${{ github.event.inputs.is_test_mode == 'true' && 'staging' || 'public' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name != 'workflow_dispatch' && github.ref || github.event.inputs.release_tag }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./downloaded
+
+      - name: Prepare release files (rename to maker-version-OS.zip)
+        shell: pwsh
+        run: |
+          $version = "${{ github.event.inputs.release_tag }}"
+          New-Item -ItemType Directory -Path ./release_files -Force
+
+          $platforms = @{ "windows" = "Windows"; "linux" = "Linux"; "macos" = "macOS" }
+          foreach ($key in $platforms.Keys) {
+            $dir = Get-ChildItem ./downloaded -Directory | Where-Object { $_.Name -eq $key }
+            if ($dir) {
+              $zip = Get-ChildItem $dir.FullName -Filter "*.zip" | Select-Object -First 1
+              if ($zip) {
+                $newName = "maker-$version-$($platforms[$key]).zip"
+                Copy-Item $zip.FullName -Destination "./release_files/$newName"
+                Write-Host "✅ $key -> $newName"
+              }
+            }
+          }
+          Get-ChildItem ./release_files
+
+      - name: Create GitHub Release (draft)
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "./release_files/*"
+          draft: true
+          bodyFile: ./changelog/${{ github.event.inputs.release_tag }}-CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event_name != 'workflow_dispatch' && github.ref || github.event.inputs.release_tag }}
