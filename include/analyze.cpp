@@ -15,7 +15,7 @@ bool is_up_to_date(const std::string &source, const std::string &out){
     try{
         source_time = std::filesystem::last_write_time(source);
         out_time = std::filesystem::last_write_time(out);
-    }catch(std::filesystem::filesystem_error){
+    }catch(const std::filesystem::filesystem_error&){
         return false;
     }
 
