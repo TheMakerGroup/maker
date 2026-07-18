@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "root.hpp"
 #include "shell.hpp"
 #include <deque>
 #include <string>
@@ -8,7 +7,7 @@
 using exec_t = struct exec_args {
     std::deque<std::string> list;
     const std::string target;
-    int depth = 0;
+    unsigned int depth = 0;
     bool force_legacy = false;
 };
 
@@ -42,8 +41,10 @@ namespace maker {
 
         bool execute_command(const std::string& command);
     };
+
+namespace execute_tool{
+    bool is_valid_subtask(const std::string& task_name);
+}
 }
 
-// global execution interfaces
-int execute_command(const std::string& command);
 int execute(exec_t& args);

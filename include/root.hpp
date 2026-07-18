@@ -4,6 +4,7 @@
 
 namespace maker {
     class execute;
+    namespace execute_tool{};
     namespace print{};
     namespace get{};
     namespace analyze{};

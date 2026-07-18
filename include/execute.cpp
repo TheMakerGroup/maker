@@ -15,6 +15,7 @@
 #endif
 
 constexpr size_t SUBTASK_PREFIX_LEN = 6;
+constexpr unsigned int MAX_DEPTH = 30;
 
 // ------------------------------
 // maker::executor_t implementation
@@ -97,14 +98,26 @@ bool executor_t::execute_command(const std::string& command) {
     return new_run(command);
 }
 
+namespace execute_tool{
+bool is_valid_subtask(const std::string& task_name){
+    if (task_name.size() < SUBTASK_PREFIX_LEN) {
+        return false;
+    }
+    return true;
+}
+}
+
 } // namespace maker
 
 int execute(exec_t& args) {
 
-    auto&[list, target, depth, force_legacy] = args;
+    auto&[list,
+        target,
+        depth,
+        force_legacy] = args;
     // use struct binding to keep the code readable
 
-    if (depth > 30) {
+    if (depth > MAX_DEPTH) {
         print_status(1);
         printf("Too deep recursion. Stop.\n");
         return 1;
@@ -168,9 +181,7 @@ int execute(exec_t& args) {
             }
         }else{
             // execute subtask
-            if (cmd.size() < SUBTASK_PREFIX_LEN) {
-                print_status(1);
-                printf("Invalid subtask format: %s. Stop.\n", cmd.c_str());
+            if(!maker::execute_tool::is_valid_subtask(cmd)){
                 return 1;
             }
 
@@ -193,7 +204,7 @@ int execute(exec_t& args) {
                 exec_t arg = {.list = get_task_new(task),
                             .target = task,
                             .depth = depth + 1,
-                            .force_legacy = force_legacy};
+                            .force_legacy = force_legacy}; // construct subtask struct
                 print_status(3);
                 printf("Executing dependency of subtask: %s\n",task.c_str());
                 auto ret = execute(arg);
