@@ -20,12 +20,17 @@ jobs:
         os: [windows, linux, macos]
     name: Build_${{ matrix.os }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: recursive
-          ref: ${{ github.event_name != 'workflow_dispatch' && github.ref || github.event.inputs.release_tag }}
+      - name: Checkout repository (manual git clone)
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            REF="${{ github.event.inputs.release_tag }}"
+          else
+            REF="${{ github.ref }}"
+          fi
+          git clone https://github.com/TheMakerGroup/maker.git .
+          git checkout "$REF"
+          git submodule update --init --recursive
+        shell: bash
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.14
@@ -75,11 +80,17 @@ jobs:
     environment:
       name: ${{ github.event.inputs.is_test_mode == 'true' && 'staging' || 'public' }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name != 'workflow_dispatch' && github.ref || github.event.inputs.release_tag }}
+      - name: Checkout repository
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            REF="${{ github.event.inputs.release_tag }}"
+          else
+            REF="${{ github.ref }}"
+          fi
+          git clone https://github.com/TheMakerGroup/maker.git .
+          git checkout "$REF"
+          git submodule update --init --recursive
+        shell: bash
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
