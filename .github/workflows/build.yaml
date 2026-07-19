@@ -47,6 +47,10 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install cmake zip
+          
+      - name: Clean build directory
+        run: rm -rf build
+        shell: bash
 
       - name: Configure CMake
         run: |
